@@ -1,0 +1,9 @@
+names:
+- bow
+- down
+- lookup
+- sit
+nc: 4
+path: C:\Users\User\Documents\wessup auth - Copie\smartclass_ai\student_behavior_balanced
+train: train/images
+val: valid/images

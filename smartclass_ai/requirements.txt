@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════════════════
+#  requirements.txt — SmartClass AI WBC 2026
+#  YOLOv8 (4 classes bow/down/lookup/sit) + Flask Detector Service
+# ═══════════════════════════════════════════════════════════════════════
+#
+#  INSTALLATION RECOMMANDÉE :
+#    cd smartclass_ai
+#    python -m venv .venv
+#    (windows powershell) .\.venv\Scripts\Activate.ps1
+#    python -m pip install --upgrade pip
+#
+#    --- Étape OPTIONNELLE : TORCH GPU (NVIDIA CUDA 12.x) ---
+#      pip install torch==2.4.1 torchvision==0.19.1 \
+#          --index-url https://download.pytorch.org/whl/cu124
+#
+#    --- Étape OBLIGATOIRE : reste des dépendances ---
+#      pip install -r requirements.txt
+#
+#  NOTES COMPATIBILITÉ :
+#   - mediapipe 0.10.x → PROTOBUF < 5 (exclure tensorflow/fer qui forcent protobuf>=5)
+#   - ultralytics 8.3.x → YOLOv8 modèle WBC best.pt compatible
+#   - flask 2.x → CORS + JSON (monté :5001, pas de maj 3.x nécessaire)
+# ═══════════════════════════════════════════════════════════════════════
+
+# ── Vision par ordinateur ────────────────────────────────────────────────
+opencv-python==4.10.0.84          # cv2.VideoCapture(0) camera_real.py
+opencv-python-headless==4.10.0.84 # fallback serveurs sans affichage
+
+# ── YOLOv8 (ultralytics) — modèle WBC best.pt
+#    WARNING : Ne PAS upgrader vers 8.4+ sans réentraîner le modèle
+ultralytics==8.3.18
+
+# ── Torch + TorchVision (IA backend)
+#    Si GPU CUDA : installer d'abord avec --index-url cu124 (voir header)
+#    Si CPU : ces paquets suffisent (pip install torch-cpu)
+# Torch >= 2.4 recommandé
+torch>=2.2.0,<2.6.0
+torchvision>=0.17.0,<0.21.0
+
+# ── Protobuf (règle stricte : mediapipe 0.10.x n'accepte pas protobuf>=5)
+protobuf>=4.25.3,<5.0.0
+
+# ── MediaPipe — couche biométrique optionnelle (ai_model/)
+#    Si pas utilisé par YOLO, gardé pour compatibilité future fusion
+mediapipe>=0.10.14,<0.11.0
+
+# ── Flask : smartclass-detector-service.py (localhost:5001)
+Flask==2.3.3
+Flask-Cors==4.0.1
+Werkzeug==2.3.8         # Flask 2.3 lock
+Jinja2==3.1.5
+
+# ── Process management (kill subprocess camera_real.py si nécessaire)
+psutil==5.9.8
+
+# ── Variables d'environnement
+python-dotenv==1.0.1
+
+# ── HTTP → POST backend /api/smartclass/camera
+requests==2.32.3
+urllib3==2.2.3
+
+# ── Calcul scientifique (YOLO + agrégation)
+numpy==1.26.4           # < 2.x → compatibilité mediapipe + opencv 4.10
+Pillow==10.4.0
+
+# ── Progression CLI
+tqdm==4.66.5
+
+# ── YAML (lecture class_mapping.yaml — optionnel)
+PyYAML==6.0.2
+
+# ═══════════════════════════════════════════════════════════════════════
+#  EXCLUSIONS VOLONTAIRES (RISQUES DE CONFLIT PROTOBUF 5.x)
+#   - tensorflow
+#   - fer   (face_emotion_recognition → protobuf 5 casse mediapipe)
+#   - opencv-contrib-python  (remplace opencv-python → conflit)
+# ═══════════════════════════════════════════════════════════════════════

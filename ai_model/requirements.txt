@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════════════
+# requirements.txt — SmartClass AI v4
+# Wessup / Wess Business City — PFE 2026
+# ══════════════════════════════════════════════════════════════════
+#
+# Installation :
+#   conda create -n smartclass python=3.10
+#   conda activate smartclass
+#   pip install -r requirements.txt
+#
+# Note protobuf : mediapipe 0.10.x necessite protobuf<5
+# Ne pas installer tensorflow ou fer (conflit protobuf)
+# ══════════════════════════════════════════════════════════════════
+
+# ── Vision par ordinateur ─────────────────────────────────────────
+mediapipe>=0.10.0,<0.11.0
+opencv-python>=4.8.0
+
+# ── YOLOv8 (detection comportementale Couche 1) ───────────────────
+ultralytics>=8.0.0
+
+# ── Calcul scientifique ───────────────────────────────────────────
+numpy>=1.24.0
+
+# ── Reseau / Backend ─────────────────────────────────────────────
+requests>=2.31.0
+
+# ── Protobuf (compatible mediapipe) ──────────────────────────────
+# IMPORTANT : mediapipe 0.10.x incompatible avec protobuf>=5
+# tensorflow et fer sont EXCLUS (conflit protobuf)
+protobuf>=4.25.3,<5.0.0
+
+# ── Variables d'environnement ─────────────────────────────────────
+python-dotenv>=1.0.0

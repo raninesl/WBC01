@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="utils.js"></script>
+  <script>window.WBC_DISABLE_AUTO_CHAT_INIT = true;</script>
+  <script src="chat-widget.js"></script>
+
+  <meta charset="UTF-8" />
+  <title>Classe B – Wes'sup Business City</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="transitions.css" />
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .layout {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    /* Fullscreen 3D Zone */
+    #class-3d-zone {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #1e1b4b, #020617);
+      z-index: 0;
+    }
+
+    /* UI Overlay Layer */
+    .ui-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none; /* Let clicks pass through to 3D scene */
+      z-index: 10;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: auto;
+    }
+
+    /* Floating Bubbles Common Styles */
+    .bubble-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      color: white;
+      pointer-events: auto;
+      transition: all 0.3s ease;
+      animation: floatBubble 4s ease-in-out infinite alternate;
+    }
+    
+    .bubble-card:hover {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(0, 242, 255, 0.5);
+      transform: translateY(-5px);
+    }
+
+    @keyframes floatBubble {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+
+    /* Participants Bubble (Top Right) */
+    .participants-bubble {
+      width: 250px;
+      max-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bubble-header {
+      font-family: "Orbitron", sans-serif;
+      font-size: 0.9rem;
+      color: var(--accent-cyan);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 5px;
+    }
+
+    ul#students-ul {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 5px;
+      margin: 0;
+    }
+
+    ul#students-ul li {
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+
+    /* Chat Container */
+    #chat-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    /* Chat Toggle Button (Messenger Style) */
+    .chat-toggle-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      box-shadow: 0 4px 15px rgba(0, 242, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 102;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .chat-toggle-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 242, 255, 0.6);
+    }
+
+    /* Chat Bubble Window */
+    .chat-bubble {
+      width: 350px;
+      height: 400px;
+      position: absolute;
+      bottom: 80px; /* Above the button */
+      left: 0;
+      transform-origin: bottom left;
+      transform: scale(0) translate(-20px, 20px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      z-index: 101;
+      
+      display: flex;
+      flex-direction: column;
+      pointer-events: auto;
+      
+      /* Merged styles */
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 242, 255, 0.2);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      color: white;
+    }
+
+    .chat-bubble.open {
+      transform: scale(1) translate(0, 0);
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Close Button inside Chat */
+    .chat-close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color 0.2s;
+    }
+    .chat-close-btn:hover {
+      color: white;
+    }
+
+    .chat-messages {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .chat-msg-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      width: 100%;
+    }
+    
+    .chat-msg-row.me {
+      justify-content: flex-end;
+    }
+    
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid var(--accent-cyan);
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+    
+    .chat-msg {
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      max-width: 75%;
+      border-left: 2px solid var(--accent-cyan);
+      word-wrap: break-word;
+    }
+    
+    .chat-msg.me {
+      background: rgba(112, 0, 255, 0.15);
+      border-left: none;
+      border-right: 2px solid var(--accent-purple);
+      text-align: right;
+    }
+    
+    .chat-msg .sender {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      position: relative;
+    }
+    
+    .chat-input-row input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      font-family: inherit;
+    }
+    
+    .chat-input-row input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .chat-input-row button {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      border: none;
+      border-radius: 8px;
+      color: white;
+      padding: 0 15px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .chat-input-row button.icon-btn {
+        padding: 0 10px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .chat-input-row button.icon-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: var(--accent-cyan);
+    }
+    
+    .chat-input-row button:hover {
+      transform: scale(1.05);
+    }
+
+    /* Emoji Picker */
+    .emoji-picker {
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      width: 100%;
+      height: 150px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 12px;
+      padding: 10px;
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+      gap: 5px;
+      overflow-y: auto;
+      z-index: 200;
+    }
+    .emoji-picker.open {
+      display: grid;
+    }
+    .emoji-item {
+      cursor: pointer;
+      font-size: 1.2rem;
+      text-align: center;
+      padding: 5px;
+      border-radius: 4px;
+      user-select: none;
+    }
+    .emoji-item:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* File Preview in Chat */
+    .chat-file-preview {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        margin-top: 5px;
+        cursor: pointer;
+    }
+    .chat-file-link {
+        display: block;
+        color: var(--accent-cyan);
+        text-decoration: underline;
+        margin-top: 5px;
+        font-size: 0.9rem;
+    }
+
+    /* Back Button Style Update */
+    .btn-back {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: "Orbitron", sans-serif;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    @media (max-width: 768px) {
+      .ui-layer {
+        padding: 10px;
+      }
+      .participants-bubble {
+        width: 40px; /* Collapsed state to be implemented if needed, for now just smaller */
+        height: 40px;
+        overflow: hidden;
+      }
+      .participants-bubble:hover {
+        width: 200px;
+        height: auto;
+      }
+      .chat-bubble {
+        width: 100%;
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- 1. The 3D Scene Background -->
+    <div id="class-3d-zone">
+      <div style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 16px;">🎓</div>
+        <p>Chargement de la scène 3D...</p>
+      </div>
+    </div>
+
+    <!-- 2. UI Overlay Layer -->
+    <div class="ui-layer">
+      
+      <!-- Top Bar: Header & Controls -->
+      <div class="top-bar">
+        <div style="display: flex; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+          <img src="logo wess.png" alt="Logo Wes'sup" style="height: 30px; margin-right: 12px;">
+          <div>
+            <h1 style="margin: 0; font-size: 1rem; font-family: 'Orbitron', sans-serif;">Classe B</h1>
+            <span id="class-user-info" class="user-info" style="font-size: 0.8rem; color: var(--accent-cyan);"></span>
+          </div>
+        </div>
+        
+        <button class="btn-back" id="btn-back-hall" onclick="window.transitionTo('hall.html', true)">
+          ⬅ Retour Hall
+        </button>
+      </div>
+
+      <!-- Right Side: Participants Bubble -->
+      <div style="position: absolute; top: 80px; right: 20px; display: flex; flex-direction: column; align-items: flex-end;">
+        <div style="margin-bottom:10px; display:flex; gap:8px;">
+          <button id="btn-open-class-chat" style="background:rgba(30,27,75,0.8); border:1px solid rgba(129,140,248,0.7); color:#c7d2fe; padding:8px 14px; border-radius:999px; font-size:0.85rem; cursor:pointer; backdrop-filter:blur(8px);">
+            <i class="fa-solid fa-comments"></i> Chat Classe
+          </button>
+          <button id="btn-open-chat-widget" style="background:rgba(0,242,255,0.15); border:1px solid rgba(0,242,255,0.5); color:#a5f3fc; padding:8px 14px; border-radius:999px; font-size:0.85rem; cursor:pointer; backdrop-filter:blur(8px);">
+            <i class="fa-solid fa-message"></i> Messages
+          </button>
+        </div>
+        <div class="bubble-card participants-bubble">
+          <div class="bubble-header">
+            <span>👥</span> Participants
+          </div>
+          <ul id="students-ul">
+            <!-- Rempli par JS -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Left: Chat Container (Local class chat bubble) -->
+      <div id="legacy-class-chat-container">
+        <!-- Chat Bubble Window -->
+        <div class="chat-bubble">
+          <button class="chat-close-btn" onclick="toggleChat()">✖</button>
+          <div class="bubble-header">
+            <span>💬</span> Chat Direct
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <!-- Messages -->
+          </div>
+          <div class="chat-input-row">
+            <button id="btn-attach" class="icon-btn" title="Joindre un fichier">📎</button>
+            <button id="btn-emoji" class="icon-btn" title="Emojis">😀</button>
+            <input type="text" id="chat-input" placeholder="Écrire un message..." />
+            <button class="btn btn-primary" id="btn-send">➤</button>
+            
+            <div class="emoji-picker" id="emoji-picker">
+                <!-- Rempli par JS -->
+            </div>
+            <input type="file" id="chat-file-input" hidden />
+          </div>
+        </div>
+
+        <!-- Chat Toggle Button -->
+        <div class="chat-toggle-btn" onclick="toggleChat()">
+          💬
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
+  <script src="transitions.js"></script>
+  <script>
+    function toggleChat() {
+      const bubble = document.querySelector('.chat-bubble');
+      const btn = document.querySelector('.chat-toggle-btn');
+      bubble.classList.toggle('open');
+      
+      if (bubble.classList.contains('open')) {
+        // Optional: animate button or change icon if needed
+        // btn.innerHTML = '✖'; 
+      } else {
+        // btn.innerHTML = '💬';
+      }
+    }
+
+    // Force Platform Shell (Fullscreen Wrapper)
+    if (window.top === window.self) {
+      const currentPage = window.location.pathname.split('/').pop() || 'class-b.html';
+      window.location.replace(`platform.html?target=${encodeURIComponent(currentPage)}`);
+    }
+  </script>
+  <script type="module" src="./class-b.js"></script>
+</body>
+</html>

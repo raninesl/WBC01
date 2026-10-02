@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Admin – Wes'sup Business City</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- 3D Background Elements -->
+  <div id="scene-3d">
+    <div class="grid-floor"></div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar glass-panel">
+      <div class="sidebar-header">
+        <div class="logo-glow">
+          <img src="Logo wessup st genis.png" alt="Logo Wes'sup" class="sidebar-logo" />
+          <div class="kpi-card glass-panel iot-expanded">
+            <div class="kpi-main-data">
+              <div class="kpi-icon"><i class="fas fa-video"></i></div>
+              <div class="kpi-data">
+                <h3>Activité Classe A</h3>
+                <p class="kpi-value" id="kpi-iot-activity">0%</p>
+              </div>
+            </div>
+            <div class="iot-chart-container">
+              <canvas id="iot-activity-chart"></canvas>
+            </div>
+            <div class="kpi-glow red"></div>
+          </div>
+        </div>
+        <div class="brand-text">
+          <div class="sidebar-title">WES'SUP</div>
+          <div class="sidebar-subtitle">BUSINESS CITY</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="overview">
+          <i class="fas fa-chart-pie"></i>
+          <span>Aperçu</span>
+        </button>
+        <button class="nav-item" data-href="feed.html">
+          <i class="fas fa-satellite-dish"></i>
+          <span>Feed</span>
+        </button>
+        <button class="nav-item" data-section="grades">
+          <i class="fas fa-graduation-cap"></i>
+          <span>Notes</span>
+        </button>
+        <button class="nav-item" data-section="absences">
+          <i class="fas fa-user-clock"></i>
+          <span>Absences</span>
+        </button>
+        <button class="nav-item" data-section="teachers">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <span>Professeurs</span>
+        </button>
+        <button class="nav-item" data-section="students">
+          <i class="fas fa-user-graduate"></i>
+          <span>Étudiants</span>
+        </button>
+        <button class="nav-item" data-section="schedules">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Emplois du temps</span>
+        </button>
+        <button class="nav-item" data-section="settings">
+          <i class="fas fa-cogs"></i>
+          <span>Paramètres</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Déconnexion</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Contenu principal -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar glass-panel">
+        <div class="page-title">
+          <h1>Centre de Commandement</h1>
+          <p>Administration du Métavers</p>
+        </div>
+        <div class="admin-profile">
+          <div class="admin-info">
+            <span class="admin-name">Administrateur</span>
+            <span class="admin-role">Super User</span>
+          </div>
+          <div class="admin-avatar" id="admin-profile-avatar-container">
+            <div id="admin-profile-avatar" style="width:100%; height:100%; border-radius:50%; background-image: url('https://api.dicebear.com/7.x/avataaars/svg?seed=Admin&backgroundColor=b6e3f4'); background-size: cover; background-position: center;"></div>
+            <div class="status-dot"></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- SECTION : Aperçu -->
+      <section class="section active" id="section-overview">
+        <div class="kpi-grid">
+          <div class="kpi-card glass-panel">
+            <div class="kpi-icon"><i class="fas fa-users"></i></div>
+            <div class="kpi-data">
+              <h3>Total Utilisateurs</h3>
+              <p class="kpi-value" id="kpi-total-users">0</p>
+            </div>
+            <div class="kpi-glow"></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+            <div class="kpi-data">
+              <h3>Professeurs</h3>
+              <p class="kpi-value" id="kpi-teachers">0</p>
+            </div>
+            <div class="kpi-glow purple"></div>
+          </div>
+          <div class="kpi-card glass-panel">
+            <div class="kpi-icon"><i class="fas fa-user-graduate"></i></div>
+            <div class="kpi-data">
+              <h3>Étudiants</h3>
+              <p class="kpi-value" id="kpi-students">0</p>
+            </div>
+            <div class="kpi-glow blue"></div>
+          </div>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="card-header">
+            <h2><i class="fas fa-clock"></i> Dernières Inscriptions</h2>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Rôle</th>
+                  <th>Email</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody id="last-users-body">
+                <!-- Rempli par JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Professeurs -->
+      <section class="section" id="section-teachers">
+        <div class="section-header">
+          <h2><i class="fas fa-chalkboard-teacher"></i> Gestion des Professeurs</h2>
+          <button class="btn-neon" data-open-modal="teacher">
+            <i class="fas fa-plus"></i> Nouveau Professeur
+          </button>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Identifiant</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="teachers-body">
+                <!-- Rempli par JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Notes -->
+      <section class="section" id="section-grades">
+        <div class="section-header">
+          <h2><i class="fas fa-graduation-cap"></i> Notes par classe</h2>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="form-row" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="admin-grades-class">Classe</label>
+              <select id="admin-grades-class"></select>
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+              <label style="opacity: 0;">Action</label>
+              <button class="btn-neon" id="admin-grades-refresh" type="button" style="align-self: flex-start;">
+                <i class="fas fa-rotate-right"></i> Rafraîchir
+              </button>
+            </div>
+          </div>
+          <div id="admin-grades-status" style="margin: 10px 0 0 0; color: rgba(255,255,255,0.6); font-size: 0.9rem;"></div>
+          <div class="table-responsive" style="margin-top: 15px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Étudiant</th>
+                  <th>Moyenne</th>
+                  <th>Notés</th>
+                  <th>En attente</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-grades-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Absences -->
+      <section class="section" id="section-absences">
+        <div class="section-header">
+          <h2><i class="fas fa-user-clock"></i> Absences par classe</h2>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="form-row" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label for="admin-absences-class">Classe</label>
+              <select id="admin-absences-class"></select>
+            </div>
+            <div class="form-group" style="justify-content: flex-end;">
+              <label style="opacity: 0;">Action</label>
+              <button class="btn-neon" id="admin-absences-refresh" type="button" style="align-self: flex-start;">
+                <i class="fas fa-rotate-right"></i> Rafraîchir
+              </button>
+            </div>
+          </div>
+          <div id="admin-absences-status" style="margin: 10px 0 0 0; color: rgba(255,255,255,0.6); font-size: 0.9rem;"></div>
+          <div class="table-responsive" style="margin-top: 15px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Étudiant</th>
+                  <th>Total</th>
+                  <th>Détail</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-absences-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Étudiants -->
+      <section class="section" id="section-students">
+        <div class="section-header">
+          <h2><i class="fas fa-user-graduate"></i> Gestion des Étudiants</h2>
+          <button class="btn-neon" data-open-modal="student">
+            <i class="fas fa-plus"></i> Nouvel Étudiant
+          </button>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Identifiant</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="students-body">
+                <!-- Rempli par JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Emplois du temps -->
+      <section class="section" id="section-schedules">
+        <div class="section-header">
+          <h2><i class="fas fa-calendar-alt"></i> Gestion des Emplois du Temps</h2>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-neon" id="sched-import-legacy" style="background: linear-gradient(135deg, rgba(255,100,0,0.8), rgba(255,180,0,0.8));">
+              <i class="fas fa-database"></i> Importer données existantes
+            </button>
+            <button class="btn-neon" data-open-modal="schedule">
+              <i class="fas fa-plus"></i> Nouvel EDT
+            </button>
+          </div>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div id="sched-status" style="margin-bottom:15px; color: rgba(255,255,255,0.7);"></div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Classe</th>
+                  <th>Nom affiché</th>
+                  <th>Cours</th>
+                  <th>Examens</th>
+                  <th>Source</th>
+                  <th>Mis à jour</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sched-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Détail EDT sélectionné -->
+        <div id="sched-detail-wrapper" class="content-card glass-panel" style="margin-top:20px; display:none;">
+          <div class="card-header">
+            <h3 id="sched-detail-title">Détail emploi du temps</h3>
+            <div>
+              <button class="btn-neon" id="sched-exam-add" style="background: linear-gradient(135deg, rgba(180, 50, 220, 0.7), rgba(255, 100, 220, 0.7));">
+                <i class="fas fa-plus"></i> Ajouter un examen
+              </button>
+              <button class="btn-neon" id="sched-edit-btn">
+                <i class="fas fa-edit"></i> Modifier
+              </button>
+            </div>
+          </div>
+
+          <div id="sched-detail-meta" style="margin:15px 0; padding:12px; background:rgba(0,255,255,0.05); border-radius:8px; border:1px solid rgba(0,255,255,0.2);"></div>
+
+          <!-- Timetable -->
+          <h4 style="margin:15px 0 10px; color:#00e6ff;">📅 Emploi du temps (Semaine)</h4>
+          <div id="sched-timetable" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap:12px;"></div>
+
+          <!-- Examens -->
+          <h4 style="margin:25px 0 10px; color:#ff7aff;">📝 Examens / Contrôles</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Matière</th>
+                  <th>Heure</th>
+                  <th>Type</th>
+                  <th>Salle</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sched-exams-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Paramètres -->
+      <section class="section" id="section-settings">
+        <div class="content-card glass-panel">
+          <div class="card-header">
+            <h2><i class="fas fa-cogs"></i> Configuration Système</h2>
+          </div>
+          <div class="settings-content">
+            <p class="settings-intro">
+              Panneau de configuration du métavers. Fonctionnalités à venir :
+            </p>
+            <div class="feature-list">
+              <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Gestion avancée des permissions</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-fingerprint"></i>
+                <span>Règles de génération des matricules</span>
+              </div>
+              <div class="feature-item">
+                <i class="fas fa-vr-cardboard"></i>
+                <span>Paramètres de l'environnement 3D</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal création utilisateur -->
+  <div class="modal-backdrop" id="user-modal-backdrop" hidden>
+    <div class="modal glass-panel">
+      <div class="modal-header">
+        <h3 id="modal-title">Créer un utilisateur</h3>
+        <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="user-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="user-name">Nom complet</label>
+            <input type="text" id="user-name" required placeholder="Ex: Jean Dupont" />
+          </div>
+
+          <div class="form-group">
+            <label for="user-email">Email</label>
+            <input type="email" id="user-email" required placeholder="email@wessup.com" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="user-role">Rôle</label>
+            <select id="user-role" required>
+              <option value="admin">Admin</option>
+              <option value="teacher">Professeur</option>
+              <option value="student">Étudiant</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="student-class-group" style="display:none;">
+            <label for="user-class">Classe</label>
+            <select id="user-class">
+              <option value="BTS 1">BTS 1</option>
+              <option value="BTS 2">BTS 2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="B3">B3</option>
+              <option value="M1">M1</option>
+              <option value="M2">M2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" id="student-formation-group" style="display:none;">
+          <div class="form-group">
+            <label for="user-formation">Formation</label>
+            <select id="user-formation">
+              <option value="">-- Choisir --</option>
+              <option value="BTS">BTS</option>
+              <option value="BACHELOR">Bachelor</option>
+              <option value="MASTERE">Mastère</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="user-track">Filière</label>
+            <input type="text" id="user-track" placeholder="Ex: NDRC, GPME, MANAGEMENT..." />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="user-password">Mot de passe</label>
+            <input type="password" id="user-password" placeholder="•••••••• (laisser vide pour ne pas changer)" />
+          </div>
+          <div class="form-group">
+            <label for="user-status">Statut</label>
+            <select id="user-status">
+              <option value="active">Actif</option>
+              <option value="inactive">Inactif</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit">
+          Enregistrer
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modifier / Créer un emploi du temps -->
+  <div class="modal-backdrop" id="sched-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 900px; max-height: 90vh; overflow-y:auto;">
+      <div class="modal-header">
+        <h3 id="sched-modal-title">Nouvel emploi du temps</h3>
+        <button class="modal-close" id="sched-modal-close"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="sched-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sched-classname">Classe (clé unique) *</label>
+            <input type="text" id="sched-classname" required placeholder="Ex: BTS CG 2, B3 Finance, MSE 2..." />
+          </div>
+          <div class="form-group">
+            <label for="sched-displayName">Nom affiché</label>
+            <input type="text" id="sched-displayName" placeholder="Ex: BTS Comptabilité Gestion Année 2" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sched-formation">Formation</label>
+            <select id="sched-formation">
+              <option value="">-- --</option>
+              <option value="BTS">BTS</option>
+              <option value="BACHELOR">Bachelor</option>
+              <option value="MASTERE">Mastère</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="sched-track">Filière (track)</label>
+            <input type="text" id="sched-track" placeholder="Ex: CG, MCO, Finance, MSE..." />
+          </div>
+          <div class="form-group">
+            <label for="sched-studentClass">Année / Classe</label>
+            <select id="sched-studentClass">
+              <option value="">-- --</option>
+              <option value="BTS 1">BTS 1</option>
+              <option value="BTS 2">BTS 2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+              <option value="B3">B3</option>
+              <option value="M1">M1</option>
+              <option value="M2">M2</option>
+            </select>
+          </div>
+        </div>
+
+        <hr style="border-color: rgba(0,255,255,0.2); margin:15px 0;">
+
+        <h4 style="color:#00e6ff; margin-bottom:10px;">📅 Emploi du temps hebdomadaire</h4>
+        <div id="sched-week-form"></div>
+
+        <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+          <button type="button" class="btn-neon" id="sched-modal-cancel" style="background: linear-gradient(135deg, rgba(160,40,40,0.6), rgba(220,60,60,0.7));">
+            Annuler
+          </button>
+          <button type="submit" class="btn-neon">
+            💾 Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Ajout d'un examen -->
+  <div class="modal-backdrop" id="exam-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="exam-modal-title">Ajouter un examen</h3>
+        <button class="modal-close" id="exam-modal-close"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="exam-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exam-date">Date *</label>
+            <input type="date" id="exam-date" required />
+          </div>
+          <div class="form-group">
+            <label for="exam-type">Type</label>
+            <select id="exam-type">
+              <option value="DS">DS (Devoir surveillé)</option>
+              <option value="CC">CC (Contrôle continu)</option>
+              <option value="Examen final">Examen final</option>
+              <option value="TP noté">TP noté</option>
+              <option value="Oral">Oral</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exam-matiere">Matière *</label>
+            <input type="text" id="exam-matiere" required placeholder="Ex: P1 plus P2, Anglais..." />
+          </div>
+          <div class="form-group">
+            <label for="exam-salle">Salle</label>
+            <input type="text" id="exam-salle" placeholder="Ex: Amphi A, Salle 201..." />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="exam-heureDebut">Heure début *</label>
+            <input type="time" id="exam-heureDebut" required />
+          </div>
+          <div class="form-group">
+            <label for="exam-heureFin">Heure fin *</label>
+            <input type="time" id="exam-heureFin" required />
+          </div>
+          <div class="form-group">
+            <label for="exam-duree">Durée (optionnel)</label>
+            <input type="text" id="exam-duree" placeholder="Ex: 2h" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="exam-professeur">Surveillant / Professeur</label>
+          <input type="text" id="exam-professeur" placeholder="Ex: M. COHAS" />
+        </div>
+
+        <div class="form-group">
+          <label for="exam-desc">Description (optionnel)</label>
+          <textarea id="exam-desc" rows="2" placeholder="Instructions, documents autorisés..."></textarea>
+        </div>
+
+        <div style="margin-top:15px; display:flex; gap:10px; justify-content:flex-end;">
+          <button type="button" class="btn-neon" id="exam-modal-cancel" style="background: linear-gradient(135deg, rgba(160,40,40,0.6), rgba(220,60,60,0.7));">
+            Annuler
+          </button>
+          <button type="submit" class="btn-neon">
+            💾 Enregistrer l'examen
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="utils.js?v=2"></script>
+  <script src="dashboard.js?v=2"></script>
+  <script src="admin-dashboard.js?v=1"></script>
+</body>
+</html>

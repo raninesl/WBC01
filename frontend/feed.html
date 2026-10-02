@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mur du Campus – Wes'sup Business City</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="icon" type="image/png" href="logo wess.png" />
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="transitions.css" />
+
+    <style>
+      :root {
+        --feed-accent: #ff7a1a;
+      }
+
+      body {
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background-color: #050510;
+        font-family: 'Rajdhani', sans-serif;
+        height: auto;
+        min-height: 100vh;
+        display: block;
+      }
+
+      /* 3D Background Container */
+      #bg-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .main-layout {
+        position: relative;
+        z-index: 10;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+      }
+
+      .profile-card {
+        padding: 30px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,122,26,0.2) 0%, transparent 70%);
+        border: 2px solid var(--feed-accent);
+        box-shadow: 0 0 20px rgba(255,122,26,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: var(--feed-accent);
+      }
+
+      .profile-name {
+        font-family: 'Orbitron', sans-serif;
+        color: white;
+        font-size: 1.2rem;
+        margin: 0;
+      }
+
+      .profile-role {
+        color: var(--feed-accent);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background: rgba(255,122,26,0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,122,26,0.3);
+      }
+
+      .academic-status {
+        margin-top: 15px;
+        background: rgba(0, 242, 255, 0.05);
+        border: 1px solid rgba(0, 242, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        width: 100%;
+        text-align: left;
+        display: none; /* Hidden by default */
+      }
+      .academic-status h4 {
+        margin: 0 0 10px 0;
+        font-size: 0.9rem;
+        color: #00f2ff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .academic-status p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #ccc;
+        font-style: italic;
+        line-height: 1.4;
+      }
+
+      .nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .nav-btn {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 15px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.1rem;
+        text-decoration: none;
+      }
+
+      .nav-btn:hover {
+        background: rgba(255,122,26,0.1);
+        border-color: var(--feed-accent);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .nav-btn.danger:hover {
+        background: rgba(255, 51, 102, 0.1);
+        border-color: #ff3366;
+        color: #ff3366;
+      }
+
+      /* Feed Area */
+      .feed-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .header-holo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .header-holo h1 {
+        font-family: 'Orbitron', sans-serif;
+        color: white;
+        font-size: 2rem;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+      }
+
+      /* Create Post Card */
+      .create-post-card {
+        padding: 25px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .create-post-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--feed-accent), transparent);
+        animation: scanline 3s linear infinite;
+      }
+
+      .post-input-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 100px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        color: white;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1.1rem;
+        resize: vertical;
+        transition: all 0.3s;
+        box-sizing: border-box;
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--feed-accent);
+        box-shadow: 0 0 15px rgba(255,122,26,0.2);
+        background: rgba(0, 0, 0, 0.6);
+      }
+
+      .post-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .cyber-select {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-family: 'Rajdhani', sans-serif;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.3s;
+      }
+
+      .cyber-select:hover {
+        border-color: var(--feed-accent);
+      }
+
+      .cyber-btn {
+        background: linear-gradient(135deg, var(--feed-accent), #d85f05);
+        border: none;
+        color: white;
+        padding: 10px 25px;
+        border-radius: 8px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-left: auto;
+        box-shadow: 0 0 15px rgba(255,122,26,0.4);
+      }
+
+      .cyber-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 25px rgba(255,122,26,0.6);
+      }
+
+      .icon-action-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .icon-action-btn:hover {
+        border-color: var(--feed-accent);
+        color: var(--feed-accent);
+        background: rgba(255,122,26,0.1);
+      }
+
+      .file-preview {
+        font-size: 0.9rem;
+        color: var(--feed-accent);
+        margin-left: 10px;
+      }
+
+      /* Feed Stream */
+      .feed-stream {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .post-card {
+        background: rgba(10, 10, 30, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-left: 3px solid var(--feed-accent);
+        border-radius: 12px;
+        padding: 25px; /* Reduced from 25px */
+        animation: slideIn 0.5s ease-out;
+        transition: all 0.3s;
+      }
+
+      .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        background: rgba(15, 15, 35, 0.7);
+      }
+
+      .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px; /* Reduced from 15px */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 8px; /* Reduced from 10px */
+      }
+
+      .post-author-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .author-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--feed-accent);
+      }
+
+      .author-details {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .author-name {
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+
+      .post-time {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+      }
+
+      .post-badges {
+        display: flex;
+        gap: 8px;
+      }
+
+      .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+      .badge-type { background: rgba(0, 242, 255, 0.1); color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.3); }
+      .badge-scope { background: rgba(255, 122, 26, 0.1); color: var(--feed-accent); border: 1px solid rgba(255, 122, 26, 0.3); }
+
+      .post-body {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        font-size: 1.05rem;
+        white-space: pre-wrap;
+      }
+
+      .attachment-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 10px 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--feed-accent);
+        text-decoration: none;
+        transition: all 0.3s;
+      }
+
+      .attachment-link:hover {
+        background: rgba(255, 122, 26, 0.1);
+        border-color: var(--feed-accent);
+      }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes scanline {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+
+      @media (max-width: 900px) {
+        .main-layout {
+          grid-template-columns: 1fr;
+          padding: 10px;
+        }
+        .sidebar {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  
+  <body>
+    <!-- 3D Background Canvas -->
+    <div id="bg-container"></div>
+
+    <script>
+      // Force Platform Shell logic
+      if (window.top === window.self) {
+        const currentPage = window.location.pathname.split('/').pop() || 'feed.html';
+        window.location.replace(`platform.html?target=${encodeURIComponent(currentPage)}`);
+      }
+    </script>
+
+    <div class="main-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="glass-panel profile-card" id="profile-card" style="cursor: pointer;">
+          <div id="feed-user-avatar" class="profile-avatar">
+            <i class="fa-solid fa-user-astronaut"></i>
+          </div>
+          <h2 id="feed-user-name" class="profile-name">Chargement...</h2>
+          <span id="feed-user-role" class="profile-role">...</span>
+          <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 10px;">
+            <i class="fa-solid fa-pen"></i> Modifier mon avatar
+          </div>
+        </div>
+
+        <!-- Academic Status Section -->
+        <div id="academic-status-container" class="academic-status">
+            <h4>
+                Suivi Académique
+                <span id="academic-emoji" style="font-size: 1.5rem;"></span>
+            </h4>
+            <p id="academic-remarks">Aucune remarque pour le moment.</p>
+        </div>
+
+        <nav class="glass-panel nav-menu" style="padding: 20px;">
+          <a id="btn-back-hall" class="nav-btn">
+            <i class="fa-solid fa-arrow-left"></i> Retour au Hall
+          </a>
+          <a id="btn-view-feed" class="nav-btn active">
+             <i class="fa-solid fa-satellite-dish"></i> Fil d'actualité
+          </a>
+          <a id="btn-view-grades" class="nav-btn" style="display: none;">
+             <i class="fa-solid fa-graduation-cap"></i> Notes & Absences
+          </a>
+          <a href="teacher-dashboard.html" id="btn-control-center" class="nav-btn" style="display: none;">
+            <i class="fa-solid fa-sliders"></i> Centre de contrôle
+          </a>
+          <button id="btn-logout" class="nav-btn danger">
+            <i class="fa-solid fa-power-off"></i> Déconnexion
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Feed -->
+      <main id="feed-view" class="feed-container">
+        <div class="header-holo">
+          <h1><i class="fa-solid fa-satellite-dish"></i> Mur du Campus</h1>
+          <div style="color: rgba(255,255,255,0.5);">
+            <i class="fa-solid fa-signal" style="color: #00ff88;"></i> LIVE
+          </div>
+        </div>
+
+        <!-- Create Post -->
+        <div class="glass-panel create-post-card">
+          <div class="post-input-wrapper">
+            <textarea id="feed-input" placeholder="Transmettre un message au réseau..."></textarea>
+          </div>
+          
+          <div class="post-actions">
+            <select id="feed-scope" class="cyber-select">
+              <option value="GLOBAL">🌍 Global (Tout le campus)</option>
+              <option value="BTS 1">🏛 BTS 1</option>
+              <option value="BTS 2">🏛 BTS 2</option>
+              <option value="B1">🏛 B1</option>
+              <option value="B2">🏛 B2</option>
+              <option value="B3">🏛 B3</option>
+              <option value="M1">🏛 M1</option>
+              <option value="M2">🏛 M2</option>
+            </select>
+
+            <select id="feed-type" class="cyber-select">
+              <option value="STATUS">💬 Discussion</option>
+              <option value="COURSE">📚 Cours / Ressource</option>
+              <option value="ANNOUNCEMENT">📢 Annonce Officielle</option>
+            </select>
+
+            <input id="feed-file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png" style="display:none;" />
+            <button id="btn-attach" type="button" class="icon-action-btn" title="Joindre un fichier">
+              <i class="fa-solid fa-paperclip"></i>
+            </button>
+            <span id="file-name" class="file-preview"></span>
+
+            <button id="feed-send-btn" class="cyber-btn">
+              <i class="fa-solid fa-paper-plane"></i> Publier
+            </button>
+          </div>
+          <div id="feed-status" style="margin-top: 10px; font-size: 0.9rem;"></div>
+        </div>
+
+        <!-- Feed Stream -->
+        <div id="post-list" class="feed-stream">
+          <!-- Posts will be injected here -->
+          <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 50px;">
+            <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>
+            Initialisation du flux de données...
+          </div>
+        </div>
+      </main>
+
+      <!-- Grades & Absences View -->
+      <main id="grades-view" class="feed-container" style="display: none;">
+        <div class="header-holo">
+          <h1><i class="fa-solid fa-graduation-cap"></i> Résultats & Assiduité</h1>
+          <div style="color: rgba(255,255,255,0.5);">
+            <i class="fa-solid fa-chart-pie" style="color: var(--feed-accent);"></i> ANALYTICS
+          </div>
+        </div>
+
+        <!-- Absences Card -->
+        <div class="glass-panel" style="padding: 25px; border-left: 4px solid #ff4444; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <div>
+                    <h3 style="margin:0; color:white; font-size:1.4rem;">Absences Totales</h3>
+                    <p style="margin:5px 0 0 0; color:rgba(255,255,255,0.6); font-size:0.9rem;">Cumul sur l'année en cours</p>
+                </div>
+                <div style="text-align: right;">
+                    <span id="grades-total-absences" style="font-size: 3rem; font-weight: bold; color: #ff4444; text-shadow: 0 0 20px rgba(255, 68, 68, 0.4);">0</span>
+                </div>
+            </div>
+            
+            <!-- Breakdown Container -->
+            <div id="absences-breakdown" style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                <!-- JS will inject pills here -->
+            </div>
+        </div>
+
+        <!-- Grades Grid -->
+        <div id="grades-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <!-- Course Cards will be injected here -->
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br><br>
+                Chargement des résultats...
+            </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="transitions.js"></script>
+    <script src="utils.js"></script>
+    <script src="3d-bg.js"></script>
+    <script type="module" src="feed.js?v=6"></script>
+  </body>
+</html>

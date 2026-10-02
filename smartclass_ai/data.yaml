@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['looking_forward', 'raising_hand', 'reading', 'sleeping', 'turning_around']
+
+roboflow:
+  workspace: my-workspace-d7rkv
+  project: wbc-detection-ctvjw
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/my-workspace-d7rkv/wbc-detection-ctvjw/dataset/2

@@ -1,0 +1,14 @@
+path: C:/Users/User/Documents/wessup auth - Copie/smartclass_ai/smartclass_v2/student_behavior_v2_raw
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 5
+
+names:
+  0: Looking_Forward
+  1: Raising_Hand
+  2: Reading
+  3: Sleeping
+  4: Turning_Around

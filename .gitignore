@@ -1,0 +1,83 @@
+# ══════════════════════════════════════════════════════════════════
+# .gitignore — Wessup / Wess Business City — SmartClass PFE 2026
+# IMPORTANT : Ne jamais commiter ce fichier avec des vraies valeurs
+# ══════════════════════════════════════════════════════════════════
+
+# ── Variables d'environnement (SECRETS) ───────────────────────────
+.env
+.env.local
+.env.production
+.env.*.local
+
+# ── Dépendances Node.js ───────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# ── Python ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Modèles ML entraînés ──────────────────────────────────────────
+ai_model/ml_model/*.pkl
+ai_model/ml_model/*.joblib
+ai_model/ml_model/*.h5
+ai_model/ml_model/*.pt
+smartclass_ai/runs/
+*.pt
+*.onnx
+
+# ── Sessions et données temporaires ──────────────────────────────
+ai_model/sessions/
+sessions/
+*.csv
+*.json.tmp
+.session_id   # SmartClass local session id (smartclass-detector-service.py + legacy scripts)
+
+# ── Uploads utilisateurs ──────────────────────────────────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ── Logs ──────────────────────────────────────────────────────────
+*.log
+logs/
+*.log.*
+
+# ── Système d'exploitation ────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Éditeurs et IDEs ─────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.history/
+
+# ── Divers ────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.rar

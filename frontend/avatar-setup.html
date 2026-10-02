@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Avatar Studio – Wes'sup Business City</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="icon" type="image/png" href="logo wess.png" />
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="transitions.css" />
+
+    <!-- model-viewer -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    
+    <!-- Avaturn SDK -->
+    <script type="module">
+      import { AvaturnSDK } from "https://cdn.jsdelivr.net/npm/@avaturn/sdk/dist/index.js";
+      window.AvaturnSDK = AvaturnSDK;
+    </script>
+
+    <style>
+      :root {
+        --scan-color: rgba(0, 242, 255, 0.5);
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #050510; /* Fallback */
+      }
+
+      /* 3D Background Container */
+      #bg-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      .main-layout {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        padding: 0; /* No padding for full screen */
+        box-sizing: border-box;
+        gap: 0; /* No gap for seamless integration */
+        align-items: stretch; /* Stretch to fill height */
+        justify-content: flex-start;
+      }
+
+      /* Glass Panels */
+      .glass-panel {
+        background: rgba(10, 10, 30, 0.6);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: none; /* No border for full height panel */
+        box-shadow: none;
+        border-radius: 0; /* No border radius for full height panel */
+        overflow: hidden;
+      }
+
+      /* Avatar Viewport (Left/Center) */
+      .avatar-viewport {
+        flex: 1; /* Occupy remaining space */
+        height: 100%;
+        max-height: none; /* Full height */
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        border: none;
+      }
+
+      .viewport-header {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 20;
+      }
+
+      .viewport-header h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--accent-cyan);
+        margin: 0;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        letter-spacing: 2px;
+      }
+
+      .viewport-header p {
+        font-family: 'Rajdhani', sans-serif;
+        color: rgba(255, 255, 255, 0.7);
+        margin: 5px 0 0 0;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0, 242, 255, 0.05) 0%, transparent 70%);
+      }
+
+      .avatar-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        pointer-events: none;
+      }
+
+      .avatar-placeholder-card {
+        max-width: 520px;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(0, 242, 255, 0.25);
+        border-radius: 18px;
+        padding: 18px 18px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      }
+
+      .avatar-placeholder-title {
+        font-family: 'Orbitron', sans-serif;
+        color: #fff;
+        font-size: 1.05rem;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+      }
+
+      .avatar-placeholder-sub {
+        font-family: 'Rajdhani', sans-serif;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 0.95rem;
+        line-height: 1.35;
+      }
+
+      /* Scanning Effect */
+      .scanner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: linear-gradient(to bottom, transparent 49%, var(--scan-color) 50%, transparent 51%);
+        background-size: 100% 200%;
+        animation: scan 4s linear infinite;
+        opacity: 0.3;
+      }
+
+      @keyframes scan {
+        0% { background-position: 0% -100%; }
+        100% { background-position: 0% 200%; }
+      }
+
+      .hologram-base {
+        position: absolute;
+        bottom: 50px;
+        left: 50%;
+        transform: translateX(-50%) rotateX(60deg);
+        width: 300px;
+        height: 300px;
+        border: 2px solid var(--accent-cyan);
+        border-radius: 50%;
+        box-shadow: 0 0 50px var(--accent-cyan), inset 0 0 30px var(--accent-cyan);
+        opacity: 0.4;
+        animation: pulseBase 3s infinite ease-in-out;
+      }
+
+      @keyframes pulseBase {
+        0%, 100% { opacity: 0.3; transform: translateX(-50%) rotateX(60deg) scale(1); }
+        50% { opacity: 0.6; transform: translateX(-50%) rotateX(60deg) scale(1.1); }
+      }
+
+      /* Integrated Customizer */
+      .control-panel {
+        width: 500px; /* Slightly wider for options */
+        max-width: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 0; /* Managed by sub-elements */
+        gap: 0;
+        align-self: stretch;
+        border-left: 1px solid rgba(0, 242, 255, 0.2);
+        background: rgba(5, 5, 15, 0.8);
+      }
+
+      .control-header {
+        padding: 30px 30px 10px;
+        text-align: center;
+      }
+
+      .setup-steps {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        padding: 14px 30px 22px;
+      }
+
+      .setup-step {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+        color: rgba(255, 255, 255, 0.75);
+        user-select: none;
+      }
+
+      .setup-step-dot {
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.8rem;
+        border: 1px solid rgba(0, 242, 255, 0.25);
+        color: var(--accent-cyan);
+        background: rgba(0, 242, 255, 0.08);
+        flex: 0 0 auto;
+      }
+
+      .setup-step-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        line-height: 1.2;
+      }
+
+      .setup-step-label strong {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.78rem;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .setup-step-label span {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .setup-step.is-active {
+        border-color: rgba(0, 242, 255, 0.35);
+        box-shadow: 0 0 18px rgba(0, 242, 255, 0.12);
+        background: rgba(0, 242, 255, 0.06);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .setup-step.is-done {
+        border-color: rgba(0, 255, 136, 0.35);
+        background: rgba(0, 255, 136, 0.06);
+      }
+
+      .setup-step.is-done .setup-step-dot {
+        border-color: rgba(0, 255, 136, 0.35);
+        color: #00ff88;
+        background: rgba(0, 255, 136, 0.10);
+      }
+
+      .setup-step.is-locked {
+        opacity: 0.55;
+        filter: grayscale(0.25);
+      }
+
+      .bottom-actions {
+        padding: 20px 30px;
+        background: rgba(0, 0, 0, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      .btn-cyber {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9rem;
+      }
+
+      .status-readout {
+        background: rgba(0, 242, 255, 0.05);
+        border: 1px solid rgba(0, 242, 255, 0.16);
+        border-radius: 14px;
+        padding: 14px 14px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        line-height: 1.35;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .btn-cyber:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        filter: grayscale(0.2);
+      }
+
+      .login-banner {
+        background: rgba(255, 51, 102, 0.08);
+        border: 1px solid rgba(255, 51, 102, 0.35);
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .login-banner-title {
+        font-family: 'Orbitron', sans-serif;
+        color: #ff3366;
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+      }
+
+      .login-banner-text {
+        font-family: 'Rajdhani', sans-serif;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        line-height: 1.35;
+      }
+
+      .import-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .import-title {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--accent-cyan);
+        letter-spacing: 1px;
+        font-size: 0.95rem;
+      }
+
+      .import-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .import-row input {
+        flex: 1;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,242,255,0.25);
+        background: rgba(0,0,0,0.35);
+        color: #fff;
+        padding: 0 12px;
+        font-family: 'Rajdhani', sans-serif;
+        outline: none;
+      }
+
+      .import-hint {
+        font-family: 'Rajdhani', sans-serif;
+        color: rgba(255,255,255,0.65);
+        font-size: 0.9rem;
+        line-height: 1.35;
+      }
+
+      /* Modal Overlay - Only for Avaturn */
+      #creator-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #000;
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .creator-topbar {
+        position: absolute;
+        left: 16px;
+        right: 56px;
+        top: 12px;
+        z-index: 2001;
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 16px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(0, 242, 255, 0.16);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+
+      .creator-topbar input {
+        min-width: 0;
+      }
+
+      @media (max-width: 520px) {
+        .setup-steps {
+          grid-template-columns: 1fr;
+          padding: 14px 20px 18px;
+        }
+        .creator-topbar {
+          flex-direction: column;
+          right: 16px;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .main-layout {
+          flex-direction: column;
+          padding: 10px;
+        }
+        .avatar-viewport {
+          width: 100%;
+          height: 50vh;
+        }
+        .control-panel {
+          width: 100%;
+          padding: 20px;
+        }
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 3D Background Canvas (handled by 3d-bg.js) -->
+    <div id="bg-container"></div>
+
+    <div class="main-layout">
+      <!-- Left: Holographic Avatar View -->
+      <div class="avatar-viewport glass-panel">
+        <div class="viewport-header">
+          <h2>VISUALISATION</h2>
+          <p>Projection Holographique</p>
+        </div>
+        
+        <div class="scanner-overlay"></div>
+        <div class="hologram-base"></div>
+
+        <model-viewer
+          id="avatar-3d-view"
+          autoplay
+          camera-controls
+          auto-rotate
+          rotation-per-second="30deg"
+          exposure="1"
+          shadow-intensity="2"
+          shadow-softness="1"
+          environment-image="neutral"
+          animation-name="Idle"
+          camera-orbit="0deg 75deg 3m"
+          field-of-view="30deg"
+        ></model-viewer>
+
+        <div id="avatar-placeholder" class="avatar-placeholder">
+          <div class="avatar-placeholder-card">
+            <div class="avatar-placeholder-title">Aucun avatar importé</div>
+            <div class="avatar-placeholder-sub">Utilisez Avaturn pour créer votre avatar, puis il sera importé automatiquement et affiché ici.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Controls & Customizer -->
+      <div class="control-panel glass-panel">
+        <div class="control-header">
+          <h1>Avatar Studio</h1>
+          <div style="height: 2px; width: 50px; background: var(--accent-cyan); margin: 10px auto;"></div>
+        </div>
+        <div class="setup-steps" id="avatar-steps">
+          <div class="setup-step is-active" data-step="1">
+            <div class="setup-step-dot">1</div>
+            <div class="setup-step-label">
+              <strong>CRÉER</strong>
+              <span>Avaturn</span>
+            </div>
+          </div>
+          <div class="setup-step" data-step="2">
+            <div class="setup-step-dot">2</div>
+            <div class="setup-step-label">
+              <strong>IMPORTER</strong>
+              <span>Modèle 3D</span>
+            </div>
+          </div>
+          <div class="setup-step" data-step="3">
+            <div class="setup-step-dot">3</div>
+            <div class="setup-step-label">
+              <strong>VALIDER</strong>
+              <span>Entrer</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-actions">
+          <div class="status-readout" id="avatar-save-status">
+            Créez votre avatar réaliste via Avaturn, puis importez-le pour l'utiliser dans la plateforme.
+          </div>
+
+          <div id="login-banner" class="login-banner" style="display:none;">
+            <div class="login-banner-title">Connexion requise</div>
+            <div class="login-banner-text">Pour importer et sauvegarder votre avatar, connectez-vous.</div>
+            <button class="btn-cyber primary" id="btn-login">Se connecter</button>
+          </div>
+
+          <button class="btn-cyber primary" id="open-avaturn-btn">
+            <i class="fas fa-user-astronaut"></i> Utiliser Avaturn (Réaliste)
+          </button>
+
+          <div class="import-box">
+            <div class="import-title">Importer (URL export)</div>
+            <div class="import-row">
+              <input id="avatar-import-url-main" placeholder="Collez l’URL d’export (.glb/.gltf/.vrm)" />
+              <button class="btn-cyber primary" id="avatar-import-btn-main" style="width:auto; padding: 10px 14px; font-size: 0.8rem; letter-spacing: 1px;">Importer</button>
+            </div>
+            <div class="import-hint">L'import copie le modèle sur le serveur puis vous envoie au Hall.</div>
+          </div>
+
+          <button class="btn-cyber success" id="valider-entrer-btn">
+            <i class="fas fa-check"></i> Entrer dans le Hall
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Avaturn only -->
+    <div id="creator-modal-overlay">
+      <div class="modal-window" style="width: 90vw; height: 90vh; background: #050510; border: 1px solid var(--accent-cyan); border-radius: 20px; position: relative;">
+        <button class="close-modal" id="close-customizer-btn" style="position: absolute; top: 10px; right: 10px; z-index: 2001;"><i class="fas fa-times"></i></button>
+        <div class="creator-topbar">
+          <input id="avatar-import-url" placeholder="Collez ici l’URL d’export (.glb/.gltf/.vrm) si nécessaire" style="flex:1; height: 36px; border-radius: 10px; border: 1px solid rgba(0,242,255,0.3); background: rgba(0,0,0,0.4); color: #fff; padding: 0 12px; font-family: 'Rajdhani', sans-serif;" />
+          <button class="btn-cyber primary" id="avatar-import-btn" style="height: 36px; padding: 0 14px; font-size: 0.8rem; letter-spacing: 1px;">Importer</button>
+        </div>
+        <div id="avaturn-container" style="width: 100%; height: 100%; padding-top: 60px; box-sizing: border-box;"></div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="transitions.js"></script>
+    <!-- Background Script (Reusing the one from ai-assistant) -->
+    <script src="3d-bg.js"></script> 
+    <script type="module" src="./avatar.js"></script>
+  </body>
+</html>

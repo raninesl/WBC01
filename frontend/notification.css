@@ -1,0 +1,396 @@
+/* Notification Widget */
+.notification-widget {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.notification-widget:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff0055;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px #ff0055;
+  border: 2px solid var(--meta-bg-deep);
+  animation: pulse-notification 2s infinite;
+  z-index: 10;
+}
+
+@keyframes pulse-notification {
+  0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); transform: scale(1); }
+  50% { transform: scale(1.1); }
+  70% { box-shadow: 0 0 0 6px rgba(255, 0, 85, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); transform: scale(1); }
+}
+
+/* Custom Dialogs (Confirm & Alert) */
+.custom-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.custom-dialog-backdrop.active {
+    opacity: 1;
+}
+
+.custom-dialog {
+    background: rgba(10, 10, 25, 0.95);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.1);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.custom-dialog-backdrop.active .custom-dialog {
+    transform: scale(1);
+}
+
+.custom-dialog-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: var(--accent-cyan);
+}
+
+.custom-dialog-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.custom-dialog-message {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin-bottom: 25px;
+}
+
+.custom-dialog-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-dialog {
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.btn-dialog-confirm {
+    background: var(--accent-cyan);
+    color: black;
+    border-color: var(--accent-cyan);
+}
+
+.btn-dialog-confirm:hover {
+    box-shadow: 0 0 15px var(--accent-cyan);
+    transform: translateY(-2px);
+}
+
+.btn-dialog-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-dialog-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-dialog-danger {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    border-color: #ff4444;
+}
+
+.btn-dialog-danger:hover {
+    background: #ff4444;
+    color: white;
+    box-shadow: 0 0 15px #ff4444;
+}
+
+/* Toast Notification System */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    background: rgba(10, 10, 25, 0.95);
+    border-left: 4px solid var(--accent-cyan);
+    border-radius: 8px;
+    padding: 15px 20px;
+    min-width: 300px;
+    max-width: 450px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 242, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    pointer-events: auto;
+    animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.toast:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4), 0 0 25px rgba(0, 242, 255, 0.2);
+}
+
+.toast.toast-out {
+    animation: toast-out 0.3s ease forwards;
+}
+
+.toast-icon {
+    font-size: 1.5rem;
+    color: var(--accent-cyan);
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.toast-message {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.toast-close {
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.toast-close:hover {
+    color: white;
+}
+
+@keyframes toast-in {
+    from { opacity: 0; transform: translateX(50px) scale(0.9); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toast-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(20px); }
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    width: 350px;
+    max-height: 500px;
+    display: none;
+    flex-direction: column;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 255, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    animation: dropdown-in 0.3s ease-out;
+}
+
+.notification-dropdown.active {
+    display: flex;
+}
+
+@keyframes dropdown-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-family: var(--font-display);
+    color: var(--accent-cyan);
+}
+
+.mark-all-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.mark-all-btn:hover {
+    color: white;
+}
+
+.dropdown-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.notif-item {
+    padding: 15px 20px;
+    display: flex;
+    gap: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.notif-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.notif-item.unread {
+    background: rgba(0, 242, 255, 0.05);
+}
+
+.notif-item.unread:hover {
+    background: rgba(0, 242, 255, 0.1);
+}
+
+.notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-cyan);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-title {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.notif-msg {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 5px;
+}
+
+.notif-time {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+.empty-notif {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.dropdown-footer {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-footer button {
+    background: none;
+    border: none;
+    color: var(--accent-cyan);
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dropdown-footer button:hover {
+    text-decoration: underline;
+}
+

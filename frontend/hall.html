@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hall 3D – Wes'sup Business City</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="utils.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .layout {
+      max-width: 100%;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hall-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    #hall-scene-container {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      border-radius: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #1f2937 0%, #020617 55%, #000 100%);
+      border: none;
+      box-shadow: none;
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+      transform-origin: center;
+      z-index: 0;
+    }
+
+    #hall-scene-container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 0%, rgba(248, 250, 252, 0.12), transparent 55%);
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .hall-instruction {
+      position: fixed;
+      left: 24px;
+      bottom: 24px;
+      background: rgba(3, 7, 18, 0.85);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      pointer-events: none;
+      user-select: none;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .hall-instruction-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 10%, rgba(248, 250, 252, 0.9), transparent 70%);
+      color: #020617;
+      font-size: 0.9rem;
+    }
+
+    .hall-instruction span {
+      opacity: 0.9;
+    }
+
+    /* Bouton plein écran */
+    .fullscreen-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: rgba(3, 7, 18, 0.85);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #e5e7eb;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: #00ffff;
+      color: #00ffff;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .fullscreen-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .hall-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 380px auto;
+      }
+
+      #hall-scene-container {
+        min-height: 380px;
+      }
+    }
+
+    /* Portal Menu Overlay */
+    #portal-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 24px;
+      border-radius: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 1000;
+      min-width: 280px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #portal-menu.active {
+      display: flex;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #portal-menu h3 {
+      margin: 0 0 16px 0;
+      text-align: center;
+      color: #f8fafc;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .portal-btn {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .portal-btn:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      color: #fff;
+    }
+
+    .portal-close {
+      margin-top: 8px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 8px;
+      transition: color 0.2s;
+    }
+    
+    .portal-close:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    /* --- HUD STYLES --- */
+    .hall-hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 100;
+      pointer-events: none; /* Allow clicks to pass through to 3D scene where empty */
+    }
+
+    .hud-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .hud-logo img {
+      width: 50px;
+      height: 50px;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));
+    }
+
+    .hud-title h2 {
+      margin: 0;
+      font-family: "Orbitron", sans-serif;
+      font-size: 1.4rem;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(0, 242, 255, 0.8);
+    }
+
+    .hud-title span {
+      font-size: 0.8rem;
+      color: rgba(0, 242, 255, 0.8);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hud-profile-panel {
+      pointer-events: auto;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 242, 255, 0.3);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 220px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .hud-user-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hud-avatar-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background-color: #334155;
+      background-size: cover;
+      background-position: center top;
+      border: 2px solid #00f2ff;
+      box-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
+    }
+
+    .hud-user-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hud-user-details strong {
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .hud-badge {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      width: fit-content;
+      margin-top: 2px;
+    }
+
+    .hud-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hud-action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .hud-action-btn:hover {
+      background: rgba(0, 242, 255, 0.15);
+      border-color: #00f2ff;
+      text-shadow: 0 0 5px rgba(0, 242, 255, 0.6);
+    }
+
+    .hud-action-btn.btn-danger {
+      border-color: rgba(244, 63, 94, 0.3);
+    }
+    
+    .hud-action-btn.btn-danger:hover {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: #f43f5e;
+      text-shadow: 0 0 5px rgba(244, 63, 94, 0.6);
+    }
+
+    @media (max-width: 600px) {
+       .hall-hud {
+         flex-direction: column;
+         gap: 10px;
+         align-items: stretch;
+       }
+       .hud-profile-panel {
+         width: 100%;
+       }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Portal Menu Modal -->
+  <div id="portal-menu">
+    <h3>🎓 Salles de Classe</h3>
+    <a href="class-a.html" class="portal-btn">
+      <span style="font-size: 1.2rem">👨‍🏫</span> Classe A
+    </a>
+    <a href="class-b.html" class="portal-btn">
+      <span style="font-size: 1.2rem">👩‍🏫</span> Classe B
+    </a>
+    <button class="portal-close" onclick="closePortalMenu()">Fermer</button>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notifications-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; max-width:600px; max-height:80vh; background:rgba(15, 23, 42, 0.95); border:1px solid rgba(0, 242, 255, 0.3); border-radius:16px; z-index:2000; padding:20px; backdrop-filter:blur(12px); box-shadow:0 0 50px rgba(0,0,0,0.8); flex-direction:column; color:white;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+        <h2 style="margin:0; font-family:'Orbitron', sans-serif; color:#00f2ff;">Notifications</h2>
+        <button id="close-notifications-btn" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div id="notifications-list" style="overflow-y:auto; flex:1; max-height:400px; margin-bottom:15px;">
+        <p style="text-align:center; opacity:0.7;">Aucune notification.</p>
+    </div>
+    <div style="text-align:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+        <button id="view-assignments-btn" style="background:rgba(0, 242, 255, 0.1); border:1px solid #00f2ff; color:#00f2ff; padding:8px 16px; border-radius:8px; cursor:pointer;">Voir tous mes devoirs</button>
+    </div>
+  </div>
+
+  <!-- Assignments Modal -->
+  <div id="assignments-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:80%; max-width:800px; max-height:80vh; background:rgba(15, 23, 42, 0.95); border:1px solid rgba(0, 242, 255, 0.3); border-radius:16px; z-index:2000; padding:20px; backdrop-filter:blur(12px); box-shadow:0 0 50px rgba(0,0,0,0.8); flex-direction:column; color:white;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+        <h2 style="margin:0; font-family:'Orbitron', sans-serif; color:#00f2ff;">Mes Devoirs</h2>
+        <button id="close-assignments-btn" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <div id="assignments-list" style="overflow-y:auto; flex:1;">
+        <!-- Loaded via JS -->
+        <p style="text-align:center; opacity:0.7;">Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Submit Modal -->
+  <div id="submit-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:500px; background:rgba(15, 23, 42, 0.95); border:1px solid rgba(0, 242, 255, 0.3); border-radius:16px; z-index:2100; padding:20px; backdrop-filter:blur(12px); box-shadow:0 0 50px rgba(0,0,0,0.8); flex-direction:column; color:white;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; color:#00f2ff;" id="submit-modal-title">Rendre le devoir</h3>
+        <button id="close-submit-btn" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+    <form id="submit-form">
+        <input type="hidden" id="submit-assignment-id">
+        <div style="margin-bottom:15px;">
+            <label style="display:block; margin-bottom:8px; font-size:0.9rem;">Fichier du travail (PDF, Word, Images, etc.)</label>
+            <input type="file" id="submit-file" required style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:white;">
+        </div>
+        <div style="margin-bottom:15px;">
+            <label style="display:block; margin-bottom:8px; font-size:0.9rem;">Commentaire (Optionnel)</label>
+            <textarea id="submit-content" placeholder="Un petit mot pour le prof..." style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); border-radius:8px; color:white; min-height:80px;"></textarea>
+        </div>
+        <button type="submit" style="width:100%; padding:12px; background:linear-gradient(90deg, #00f2ff, #00a8ff); border:none; border-radius:8px; color:#000; font-weight:bold; cursor:pointer;">Envoyer</button>
+    </form>
+  </div>
+
+  <!-- Aide Modal -->
+  <div id="help-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:520px; background:rgba(15, 23, 42, 0.98); border:1px solid rgba(0, 242, 255, 0.35); border-radius:16px; z-index:2200; padding:24px; backdrop-filter:blur(12px); box-shadow:0 20px 80px rgba(0,0,0,0.8); flex-direction:column; color:white;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+        <h2 style="margin:0; font-family:'Orbitron',sans-serif; color:#00f2ff; font-size:1.3rem;">🎮 Aide & Raccourcis</h2>
+        <button id="close-help-btn" style="background:none; border:none; color:white; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+    </div>
+    <div style="overflow-y:auto; max-height:65vh;">
+      <div style="margin-bottom:18px;">
+        <h4 style="margin:0 0 10px 0; color:#00f2ff;">🏛️ Se déplacer dans le Hall</h4>
+        <ul style="margin:0; padding-left:18px; font-size:0.9rem; color:#cbd5e1; line-height:1.9;">
+          <li><kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">Z</kbd> <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">S</kbd> ou <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">↑</kbd> <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">↓</kbd> : Avancer / Reculer</li>
+          <li><kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">Q</kbd> <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">D</kbd> ou <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">←</kbd> <kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">→</kbd> : Rotation caméra</li>
+          <li><kbd style="background:#1e293b; padding:2px 8px; border-radius:4px; border:1px solid #334155;">Espace</kbd> : Sauter</li>
+        </ul>
+      </div>
+      <div style="margin-bottom:18px;">
+        <h4 style="margin:0 0 10px 0; color:#00f2ff;">💬 Discuter en temps réel</h4>
+        <ul style="margin:0; padding-left:18px; font-size:0.9rem; color:#cbd5e1; line-height:1.9;">
+          <li>Cliquez sur un <strong>avatar 3D</strong> → Ouvre un chat privé avec cette personne</li>
+          <li>Cliquez sur <strong>Chat Hall</strong> → Discussion de groupe avec tous les utilisateurs dans le hall</li>
+          <li>Cliquez sur un <strong>portail (A / B)</strong> → Accédez à une salle de classe avec son chat</li>
+          <li>Passez la souris sur un avatar pour voir son nom</li>
+        </ul>
+      </div>
+      <div style="margin-bottom:12px;">
+        <h4 style="margin:0 0 10px 0; color:#00f2ff;">🎯 Boutons utiles</h4>
+        <ul style="margin:0; padding-left:18px; font-size:0.9rem; color:#cbd5e1; line-height:1.9;">
+          <li><i class="fa-solid fa-bell" style="color:#00f2ff;"></i> <strong>Notifications</strong> : Nouveaux devoirs, notes, soumissions</li>
+          <li><i class="fa-solid fa-user-pen" style="color:#00f2ff;"></i> <strong>Modifier Avatar</strong> : Personnaliser votre apparence</li>
+          <li><i class="fa-solid fa-comments" style="color:#00f2ff;"></i> <strong>Chat Hall</strong> : Discussion globale du hall</li>
+          <li><i class="fa-solid fa-power-off" style="color:#f43f5e;"></i> <strong>Déconnexion</strong> : Fermer votre session</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- HUD Interface (Floating) -->
+    <div class="hall-hud">
+      <div class="hud-logo">
+        <img src="logo wess.png" alt="WBC Logo" />
+        <div class="hud-title">
+          <h2>WBC HALL</h2>
+          <span>Campus Métavers</span>
+        </div>
+      </div>
+      
+      <div class="hud-profile-panel glass-panel">
+        <div class="hud-user-row">
+           <div class="hud-avatar-circle" id="hud-avatar-preview"></div>
+           <div class="hud-user-details">
+             <strong id="hud-username">Chargement...</strong>
+             <span id="hud-role" class="hud-badge">...</span>
+           </div>
+        </div>
+        <div class="hud-controls">
+          <button id="btn-notifications" class="hud-action-btn" style="position:relative;">
+            <i class="fa-solid fa-bell"></i> Notifications
+            <span id="notification-badge" style="position:absolute; top:-5px; right:-5px; background:#f43f5e; color:white; font-size:0.7rem; padding:2px 6px; border-radius:10px; display:none; border:1px solid rgba(255,255,255,0.2);">0</span>
+          </button>
+          <button id="btn-edit-avatar" class="hud-action-btn">
+            <i class="fa-solid fa-user-pen"></i> Modifier Avatar
+          </button>
+          <button id="btn-open-hall-chat" class="hud-action-btn">
+            <i class="fa-solid fa-comments"></i> Chat Hall
+          </button>
+          <button id="logout-btn" class="hud-action-btn btn-danger">
+            <i class="fa-solid fa-power-off"></i> Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <main class="layout-content hall-grid">
+      <section class="card" style="padding: 0; overflow: hidden; position: relative; background: transparent; border: none; box-shadow: none;">
+        <div id="hall-scene-container"></div>
+
+    <button class="fullscreen-btn" id="fullscreen-btn" title="Plein écran" style="pointer-events:auto;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    </button>
+
+    <div class="hall-instruction" id="hall-instruction-btn" title="Aide & Raccourcis" style="cursor:pointer; pointer-events:auto;">
+      <div class="hall-instruction-badge">?</div>
+      <span>Aide & Raccourcis</span>
+    </div>
+      </section>
+    </main>
+
+  <!-- Hall chat root reserved ; actual widget root injected by chat-widget.js = id=chat-widget-root -->
+  <div id="chat-hall-placeholder" style="display:none;"></div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="utils.js"></script>
+  <script src="transitions.js"></script>
+  <script>window.WBC_DISABLE_AUTO_CHAT_INIT = true;</script>
+  <script src="chat-widget.js"></script>
+  <script>
+    // ------- HANDLER SÉCURISÉ : BOUTON CHAT HALL -------
+    // (Délégation globale au niveau document → garanti même si hall.js plante)
+    document.addEventListener("click", function (evt) {
+      var btn = evt.target.closest("#btn-open-hall-chat");
+      if (!btn) return;
+      console.log("[HTML] 👉 Clic BOUTON CHAT HALL (délégation globale)");
+      evt.stopPropagation();
+      evt.preventDefault();
+
+      // 1) Récupérer / créer socket si besoin
+      if (typeof window.io !== "undefined" && !window._hallSocket) {
+        try {
+          var token = localStorage.getItem("wbc_token");
+          window._hallSocket = window.io("http://localhost:4000", {
+            auth: token ? { token: token } : {}
+          });
+        } catch (e) { console.warn("[HTML] socket init err:", e); }
+      }
+      var socket = window._hallSocket || (typeof hallSocket !== "undefined" ? hallSocket : null);
+      try { if (!socket && window.connectSocket) window.connectSocket(); } catch(e){}
+      try { socket = socket || (typeof window.connectSocket !== 'undefined' ? null : null); } catch(e){}
+
+      // 2) Lazy init ChatWidget
+      var tries = 0;
+      var tryIt = function () {
+        var widget = window.wbcChatWidget;
+        if (!widget && typeof window.WBCChatWidget === "function") {
+          try {
+            var usr = null;
+            try { usr = JSON.parse(localStorage.getItem("wbc_user") || "null"); } catch(e){}
+            var tok = localStorage.getItem("wbc_token");
+            var sock = window._hallSocket;
+            if (!sock) {
+              try { sock = (typeof window.connectSocket !== "undefined") ? null : null; } catch(e){}
+            }
+            // Best effort : utiliser socket si dispo, sinon widget se connecte tout seul
+            try {
+              if (sock) widget = new window.WBCChatWidget({ socket: sock, currentUser: usr, token: tok });
+              else widget = new window.WBCChatWidget({ currentUser: usr, token: tok });
+              window.wbcChatWidget = widget;
+            } catch (e) { console.warn("[HTML] widget init err:", e); }
+          } catch (e) {}
+        }
+        if (widget && typeof widget.openRoomChat === "function") {
+          if (!widget.isOpen) widget.toggleWidget();
+          widget.openRoomChat("hall", "🏛️ Hall WES'SUP");
+          console.log("[HTML] ✅ Chat Hall OUVERT");
+          return;
+        }
+        // Fallback : ouvrir le launcher du widget s'il existe
+        if (tries > 6) {
+          var launcher = document.getElementById("chat-launcher");
+          if (launcher) { launcher.click(); console.log("[HTML] fallback launcher click"); }
+          return;
+        }
+        tries++;
+        setTimeout(tryIt, 220);
+      };
+      tryIt();
+    });
+
+    // Force Platform Shell (Fullscreen Wrapper)
+    try {
+      const u = JSON.parse(localStorage.getItem("wbc_user") || "null");
+      const role = String(u?.role || "").toUpperCase();
+      if (role === "ADMIN") {
+        window.location.replace("admin-dashboard.html");
+      }
+    } catch {}
+
+    if (window.top === window.self) {
+      const currentPage = window.location.pathname.split('/').pop() || 'hall.html';
+      window.location.replace(`platform.html?target=${encodeURIComponent(currentPage)}`);
+    }
+
+    function closePortalMenu() {
+      const menu = document.getElementById('portal-menu');
+      if (menu) menu.classList.remove('active');
+    }
+  </script>
+  <script type="module" src="./hall.js"></script>
+</body>
+</html>

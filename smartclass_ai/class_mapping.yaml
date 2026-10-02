@@ -1,0 +1,31 @@
+# smartclass_ai/class_mapping.yaml
+# Mapping des classes du dataset Roboflow vers les champs SmartClass
+# Généré automatiquement — ne pas modifier manuellement
+
+# Classes du modèle entraîné (dans l'ordre des IDs)
+class_names:
+  - bow       # 0 — tête penchée (fatigue / sommeil)
+  - down      # 1 — regard vers le bas (distraction / téléphone)
+  - lookup    # 2 — regard vers le tableau (attention)
+  - sit       # 3 — assis normalement (neutre / attentif)
+
+# Mapping vers champs SmartClass
+# attentionPct    = % de détections "lookup" + "sit"
+attention_classes:
+  - lookup
+  - sit
+
+# distractionPct  = % de détections "down"
+distraction_classes:
+  - down
+
+# fatiguePct      = % de détections "bow"
+fatigue_classes:
+  - bow
+
+# handsRaisedCount = non disponible dans ce dataset (toujours 0)
+hands_classes: []
+
+# Note : ce dataset ne contient pas de classe "main levée".
+# handsRaisedCount sera toujours 0 — cela n'affecte pas les scores
+# car il contribue seulement au bonus de participation dans calcCameraScore.

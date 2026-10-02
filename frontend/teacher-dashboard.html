@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Centre de Contrôle Professeur – Wes'sup Business City</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="notification.css" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- 3D Background Elements -->
+  <div id="scene-3d">
+    <div class="grid-floor"></div>
+  </div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar glass-panel">
+      <div class="sidebar-header">
+        <div class="logo-glow">
+          <img src="Logo wessup st genis.png" alt="Logo Wes'sup" class="sidebar-logo" />
+        </div>
+        <div class="brand-text">
+          <div class="sidebar-title">WES'SUP</div>
+          <div class="sidebar-subtitle">ACADEMY</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        
+        <div class="nav-section-label">Enseignement</div>
+        <button class="nav-item active" data-section="overview">
+            <i class="fas fa-chart-line"></i>
+            <span>Tableau de Bord</span>
+        </button>
+        <button class="nav-item" data-section="smartclass">
+            <i class="fas fa-robot"></i>
+            <span>SmartClass (IA)</span>
+        </button>
+        <button class="nav-item" data-section="courses">
+            <i class="fas fa-book-open"></i>
+            <span>Mes Cours</span>
+        </button>
+        <button class="nav-item" data-section="assignments">
+            <i class="fas fa-tasks"></i>
+            <span>Devoirs</span>
+        </button>
+
+        <div class="nav-section-label">Étudiants</div>
+        <button class="nav-item" data-section="students">
+          <i class="fas fa-users-viewfinder"></i>
+          <span>Suivi Étudiants</span>
+        </button>
+        
+        <div class="nav-section-label">Campus</div>
+        <button class="nav-item" onclick="window.location.href='feed.html'">
+          <i class="fas fa-satellite-dish"></i>
+          <span>Mur du Campus</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="nav-section-label">Compte</div>
+        <button class="logout-btn" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Déconnexion</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar glass-panel">
+        <div class="page-title">
+          <h1>Centre de Contrôle</h1>
+          <p>Interface Enseignant</p>
+        </div>
+        
+        <div class="header-widgets">
+             <div class="notification-widget glass-panel-sm" id="notification-bell">
+                 <i class="fas fa-bell"></i>
+                 <span class="notification-badge" id="notification-count" style="display:none">0</span>
+             </div>
+             <div class="next-class-widget glass-panel-sm">
+                 <i class="fas fa-clock" style="color:#00f2ff;"></i>
+                 <div>
+                     <span class="widget-label">Prochain cours</span>
+                     <span class="widget-value" id="header-next-class">Chargement...</span>
+                 </div>
+             </div>
+        </div>
+
+        <div class="admin-profile">
+          <div class="admin-info">
+            <span class="admin-name" id="teacher-name">Enseignant</span>
+            <span class="admin-role" id="teacher-subject">Matière Principale</span>
+            <div class="teacher-status" id="teacher-status-container">
+                <span class="status-dot active"></span> <span id="teacher-status-text">En ligne</span>
+            </div>
+          </div>
+          <div class="admin-avatar">
+            <div id="teacher-profile-avatar" class="profile-avatar-small" style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;color:#00ff88;border:1px solid #00ff88;">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- SECTION : Overview -->
+      <section class="section active" id="section-overview">
+        <div class="kpi-grid">
+          <div class="kpi-card glass-panel clickable-card" onclick="document.querySelector('[data-section=\'courses\']').click()">
+            <div class="kpi-icon"><i class="fas fa-book"></i></div>
+            <div class="kpi-data">
+              <h3>Cours Actifs</h3>
+              <p class="kpi-value" id="kpi-active-courses">0</p>
+            </div>
+            <div class="kpi-glow"></div>
+          </div>
+          <div class="kpi-card glass-panel clickable-card" onclick="document.querySelector('[data-section=\'students\']').click()">
+            <div class="kpi-icon"><i class="fas fa-user-graduate"></i></div>
+            <div class="kpi-data">
+              <h3>Étudiants</h3>
+              <p class="kpi-value" id="kpi-total-students">0</p>
+            </div>
+            <div class="kpi-glow purple"></div>
+          </div>
+          <div class="kpi-card glass-panel clickable-card" onclick="document.querySelector('[data-section=\'assignments\']').click()">
+            <div class="kpi-icon">
+                <i class="fas fa-tasks"></i>
+                <div class="badge-count" id="kpi-assignment-badge" style="display:none">0</div>
+            </div>
+            <div class="kpi-data">
+              <h3>Devoirs à Corriger</h3>
+              <p class="kpi-value" id="kpi-assignments-count">0</p>
+            </div>
+            <div class="kpi-glow blue"></div>
+          </div>
+        </div>
+
+        <div class="todo-block glass-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-check-circle"></i> À faire aujourd'hui</h2>
+            </div>
+            <div id="todo-list-container">
+                <!-- Dynamique -->
+                <ul class="todo-list" id="todo-list">
+                    <!-- Items -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="content-card glass-panel">
+          <div class="card-header">
+            <h2><i class="fas fa-clock"></i> Prochains Cours</h2>
+          </div>
+          <div class="table-responsive">
+            <table id="upcoming-courses-table">
+              <thead>
+                <tr>
+                  <th>Cours</th>
+                  <th>Classe</th>
+                  <th>Horaire</th>
+                  <th>Salle / Lien</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dynamique -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : SmartClass (IA) -->
+      <section class="section" id="section-smartclass">
+        <div class="content-card glass-panel">
+          <div class="card-header">
+            <h2><i class="fas fa-robot"></i> SmartClass - Suivi en Temps Réel</h2>
+            <span id="sc-last-update" style="font-size:0.8em; color:rgba(255,255,255,0.5);">Dernière mise à jour: --</span>
+          </div>
+          
+          <!-- Session Controls -->
+          <div class="content-card glass-panel" style="margin-bottom:20px; padding:20px;">
+            <h3 style="margin-bottom:15px; color:var(--accent-green);">Session Active</h3>
+            <div style="display:flex; gap:15px; flex-wrap:wrap; align-items:center;">
+              <div style="flex:1; min-width:200px;">
+                <label style="display:block; margin-bottom:5px; font-size:0.9em; color:rgba(255,255,255,0.7);">Sélectionner un cours</label>
+                <select id="sc-course-select" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
+                  <option value="">-- Choisir un cours --</option>
+                </select>
+              </div>
+              <div style="width:200px;">
+                <label style="display:block; margin-bottom:5px; font-size:0.9em; color:rgba(255,255,255,0.7);">Salle</label>
+                <input type="text" id="sc-room-input" value="classA" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
+              </div>
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <button id="sc-start-btn" class="btn-neon" style="background:var(--accent-green); border-color:var(--accent-green);">
+                  <i class="fas fa-play"></i> Démarrer la Session
+                </button>
+                <button id="sc-stop-btn" class="btn-neon" style="display:none; background:var(--accent-red); border-color:var(--accent-red);">
+                  <i class="fas fa-stop"></i> Arrêter la Session
+                </button>
+              </div>
+            </div>
+            <div id="sc-session-info" style="margin-top:15px; padding:10px; border-radius:8px; background:rgba(0,0,0,0.2); display:none;">
+                <p style="margin:0;"><strong>Session en cours:</strong> <span id="sc-session-course"></span> (Salle: <span id="sc-session-room"></span>)</p>
+                <div style="margin-top:15px;">
+                    <p style="font-size:0.9em; color:rgba(255,255,255,0.7); margin-bottom:8px;"><strong>Commande pour lancer la détection (copiez-coller dans un terminal) :</strong></p>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="sc-cmd-input" readonly style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white; font-family:monospace; font-size:0.9em;">
+                        <button id="sc-copy-btn" class="btn-neon" style="background:rgba(0,170,255,0.2); border-color:#0af; padding:8px 16px;">
+                            <i class="fas fa-copy"></i> Copier
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </div>
+          
+          <div class="kpi-grid" style="margin-bottom:20px;">
+                <div class="kpi-card glass-panel">
+                    <div class="kpi-icon" style="background:rgba(0,255,136,0.2); color:var(--accent-green);"><i class="fas fa-eye"></i></div>
+                    <div class="kpi-data">
+                        <h3>Attention</h3>
+                        <p class="kpi-value" id="sc-attention">0%</p>
+                    </div>
+                </div>
+                <div class="kpi-card glass-panel">
+                    <div class="kpi-icon" style="background:rgba(255,136,0,0.2); color:var(--accent-orange);"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="kpi-data">
+                        <h3>Distraction</h3>
+                        <p class="kpi-value" id="sc-distraction">0%</p>
+                    </div>
+                </div>
+                <div class="kpi-card glass-panel">
+                    <div class="kpi-icon" style="background:rgba(255,68,68,0.2); color:var(--accent-red);"><i class="fas fa-bed"></i></div>
+                    <div class="kpi-data">
+                        <h3>Fatigue</h3>
+                        <p class="kpi-value" id="sc-fatigue">0%</p>
+                    </div>
+                </div>
+            </div>
+
+          <div class="content-card glass-panel" style="margin-top:20px;">
+            <div class="card-header">
+              <h3>Historique de l'Engagement</h3>
+            </div>
+            <canvas id="sc-chart" height="100"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Courses -->
+      <section class="section" id="section-courses">
+        <div class="section-header">
+          <h2><i class="fas fa-book-open"></i> Mes Cours</h2>
+          <button class="btn-neon" id="btn-new-course">
+            <i class="fas fa-plus"></i> Nouveau Cours
+          </button>
+        </div>
+        <div class="content-card glass-panel">
+            <div class="table-responsive">
+                <table id="courses-table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Horaire</th>
+                            <th>Lieu</th>
+                            <th>Étudiants</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="courses-body">
+                        <!-- Rempli par JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Assignments -->
+      <section class="section" id="section-assignments">
+        <div class="section-header">
+          <h2><i class="fas fa-tasks"></i> Devoirs & Examens</h2>
+          <button class="btn-neon" id="btn-new-assignment">
+            <i class="fas fa-plus"></i> Nouveau Devoir
+          </button>
+        </div>
+        <div class="content-card glass-panel">
+            <div class="table-responsive">
+                <table id="assignments-table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Cours</th>
+                            <th>Publié le</th>
+                            <th>Date Limite</th>
+                            <th>Rendus</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assignments-body">
+                        <!-- Rempli par JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </section>
+
+      <!-- SECTION : Students -->
+      <section class="section" id="section-students">
+        <div class="section-header">
+          <h2><i class="fas fa-users-viewfinder"></i> Suivi des Étudiants par Matière</h2>
+          <div style="display:flex; gap:10px; align-items:center;">
+             <label for="tracking-course-filter" style="margin:0; font-size:0.9em;">Filtrer :</label>
+             <select id="tracking-course-filter" class="course-filter-select">
+                 <option value="all">Tous les cours</option>
+             </select>
+             <button class="btn-neon" id="btn-roll-call" style="background:rgba(255, 122, 26, 0.2); border-color:#ff7a1a; color:#ff7a1a;">
+                <i class="fas fa-clipboard-check"></i> Faire l'appel
+             </button>
+          </div>
+        </div>
+        
+        <div id="students-courses-container">
+            <!-- Dynamically populated with one table per course -->
+            <div class="loading-spinner">Chargement du suivi...</div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal Création Cours -->
+  <div class="modal-backdrop" id="course-modal-backdrop" hidden>
+    <div class="modal glass-panel">
+      <div class="modal-header">
+        <h3 id="modal-title">Créer un Nouveau Cours</h3>
+        <button class="modal-close" id="modal-close-course"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="course-form">
+        <input type="hidden" id="course-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="course-title">Titre du Cours</label>
+            <input type="text" id="course-title" required placeholder="Ex: Marketing Digital" />
+          </div>
+          <div class="form-group">
+            <label for="course-target-class">Classe</label>
+            <select id="course-target-class">
+                <option value="">-- Sélectionner --</option>
+                <option value="BTS 1">BTS 1</option>
+                <option value="BTS 2">BTS 2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+                <option value="B3">B3</option>
+                <option value="M1">M1</option>
+                <option value="M2">M2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="course-schedule">Horaire</label>
+            <input type="text" id="course-schedule" placeholder="Ex: Lundi 14h00" />
+          </div>
+          <div class="form-group">
+            <label for="course-location">Lieu / Salle</label>
+            <input type="text" id="course-location" placeholder="Ex: Salle B204 ou Métavers" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+             <label for="course-desc">Description</label>
+             <textarea id="course-desc" rows="3" placeholder="Description courte du module..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+             <label for="course-support-file">Support de cours (PDF, PPTX...)</label>
+             <input type="file" id="course-support-file" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px; width:100%;">
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit" id="course-submit-btn">
+          Créer le Cours
+        </button>
+        <button type="button" class="btn-neon" id="course-delete-btn" style="background:rgba(255, 68, 68, 0.2); border-color:#ff4444; color:#ff4444; margin-top:10px; width:100%;" hidden>
+          Supprimer le Cours
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Création Devoir -->
+  <div class="modal-backdrop" id="assignment-modal-backdrop" hidden>
+    <div class="modal glass-panel">
+      <div class="modal-header">
+        <h3 id="assign-modal-title">Créer un Nouveau Devoir</h3>
+        <button class="modal-close" id="modal-close-assignment"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="assignment-form">
+        <input type="hidden" id="assign-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="assign-title">Titre du Devoir</label>
+            <input type="text" id="assign-title" required placeholder="Ex: Étude de Cas Tesla" />
+          </div>
+          <div class="form-group">
+            <label for="assign-type">Type</label>
+            <select id="assign-type" required>
+                <option value="DEVOIR">Devoir</option>
+                <option value="EXAMEN">Examen</option>
+                <option value="CONTROLE_CONTINU">Contrôle Continu</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="assign-course">Cours Associé</label>
+            <select id="assign-course" required>
+                <!-- Rempli par JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="assign-target-class">Classe Concernée</label>
+            <select id="assign-target-class">
+                <option value="">-- Sélectionner (Optionnel) --</option>
+                <option value="BTS 1">BTS 1</option>
+                <option value="BTS 2">BTS 2</option>
+                <option value="B1">B1</option>
+                <option value="B2">B2</option>
+                <option value="B3">B3</option>
+                <option value="M1">M1</option>
+                <option value="M2">M2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="assign-date">Date Limite</label>
+            <input type="date" id="assign-date" required />
+          </div>
+        </div>
+        
+        <div class="form-group">
+             <label for="assign-desc">Instructions</label>
+             <textarea id="assign-desc" rows="3" placeholder="Détails du devoir..."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+             <label for="assign-file">Joindre un fichier (PDF, DOCX, ZIP...)</label>
+             <input type="file" id="assign-file" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px; width:100%;">
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit">
+          Publier le Devoir
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Évaluation Étudiant -->
+  <div class="modal-backdrop" id="evaluation-modal-backdrop" hidden>
+    <div class="modal glass-panel">
+      <div class="modal-header">
+        <h3>Évaluer l'Étudiant</h3>
+        <button class="modal-close" id="modal-close-evaluation"><i class="fas fa-times"></i></button>
+      </div>
+      
+      <div class="student-summary" style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+        <div id="eval-student-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: #333;"></div>
+        <div>
+           <h4 id="eval-student-name" style="margin: 0; color: white;">Nom Étudiant</h4>
+           <span id="eval-student-class" style="color: var(--neon-blue); font-size: 0.9em;">Classe</span>
+        </div>
+      </div>
+
+      <form id="evaluation-form">
+        <input type="hidden" id="eval-student-id">
+        
+        <div class="form-group">
+          <label>Emoji de Statut (visible dans le Hall)</label>
+          <div class="emoji-picker-container">
+            <div class="emoji-grid" id="emoji-grid">
+              <div class="emoji-option" data-emoji="🌟">🌟 Excellent</div>
+              <div class="emoji-option" data-emoji="🚀">🚀 En progrès</div>
+              <div class="emoji-option" data-emoji="🤔">🤔 En réflexion</div>
+              <div class="emoji-option" data-emoji="⚠️">⚠️ En difficulté</div>
+              <div class="emoji-option" data-emoji="💤">💤 Absent/Inactif</div>
+            </div>
+            <input type="hidden" id="eval-emoji">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="eval-subject">Matière de l'évaluation</label>
+          <select id="eval-subject" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:5px;" required>
+             <option value="" disabled selected>Choisir une matière...</option>
+             <!-- Populated by JS -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="eval-absences">Nombre d'absences</label>
+          <input type="number" id="eval-absences" min="0" placeholder="0" style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:5px;">
+        </div>
+
+        <div class="form-group">
+             <label for="eval-remarks">Remarques & Observations (visible par l'étudiant)</label>
+             <textarea id="eval-remarks" rows="5" placeholder="Ajoutez vos commentaires, conseils et observations..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit">
+          Enregistrer l'Évaluation
+        </button>
+        <button type="button" class="btn-neon" id="btn-delete-evaluation" style="background:rgba(255, 68, 68, 0.2); border-color:#ff4444; color:#ff4444; margin-top:10px; width:100%;" hidden>
+          Supprimer l'évaluation
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .course-filter-select {
+      padding: 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      min-width: 200px;
+      cursor: pointer;
+    }
+    .course-filter-select option {
+      background-color: #222;
+      color: white;
+    }
+
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .emoji-option {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    .emoji-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    .emoji-option.selected {
+      background: rgba(0, 242, 255, 0.2);
+      border-color: #00f2ff;
+      box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    }
+  </style>
+
+
+  <!-- Modal Rendus (Submissions) -->
+  <div class="modal-backdrop" id="submissions-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 900px; width: 95%;">
+      <div class="modal-header">
+        <h3 id="submissions-modal-title">Rendus des Étudiants</h3>
+        <button class="modal-close" id="modal-close-submissions"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table id="submissions-table" style="width:100%;">
+          <thead>
+            <tr>
+              <th>Étudiant</th>
+              <th>Date Rendu</th>
+              <th>Fichier / Contenu</th>
+              <th>Note</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="submissions-body">
+             <!-- Rempli par JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Notation (Grading) -->
+  <div class="modal-backdrop" id="grading-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 400px; width: 90%;">
+      <div class="modal-header">
+        <h3 id="grading-modal-title">Noter le devoir</h3>
+        <button class="modal-close" id="modal-close-grading"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="grading-form" style="padding:20px;">
+        <input type="hidden" id="grading-assignment-id">
+        <input type="hidden" id="grading-student-id">
+        
+        <div class="form-group">
+            <label>Étudiant</label>
+            <input type="text" id="grading-student-name" readonly style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding:8px; width:100%; border-radius:5px; color:white;">
+        </div>
+
+        <div class="form-group">
+            <label for="grading-score">Note (/20)</label>
+            <input type="number" id="grading-score" min="0" max="20" step="0.5" required style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid #333; color:white; border-radius:5px;">
+        </div>
+
+        <div class="form-group">
+            <label for="grading-feedback">Commentaire / Feedback</label>
+            <textarea id="grading-feedback" rows="4" placeholder="Appréciations, conseils..." style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid #333; color:white; border-radius:5px;"></textarea>
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit" style="width:100%;">Enregistrer la note</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Détails Étudiant -->
+  <div class="modal-backdrop" id="student-details-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 500px; width: 90%;">
+      <div class="modal-header">
+        <h3 id="student-details-name">Détails de l'étudiant</h3>
+        <button class="modal-close" id="modal-close-details"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="student-details-content" style="padding: 10px;">
+        <!-- Rempli par JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Envoyer Message -->
+  <div class="modal-backdrop" id="send-message-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 500px; width: 90%;">
+      <div class="modal-header">
+        <h3 id="send-message-title">Envoyer un message</h3>
+        <button class="modal-close" id="modal-close-message"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="send-message-form">
+        <input type="hidden" id="message-recipient-id">
+        <div class="form-group">
+            <label for="message-subject">Sujet</label>
+            <input type="text" id="message-subject" required placeholder="Sujet du message...">
+        </div>
+        <div class="form-group">
+            <label for="message-content">Message</label>
+            <textarea id="message-content" rows="4" required placeholder="Votre message..."></textarea>
+        </div>
+        <button type="submit" class="btn-neon modal-submit">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Appel (Roll Call) -->
+  <div class="modal-backdrop" id="roll-call-modal-backdrop" hidden>
+    <div class="modal glass-panel" style="max-width: 600px; width: 95%;">
+      <div class="modal-header">
+        <h3 id="roll-call-title">Faire l'appel</h3>
+        <button class="modal-close" id="modal-close-roll-call"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="roll-call-form" style="padding:20px;">
+        <div class="form-group">
+            <label for="roll-call-course">Cours / Classe</label>
+            <select id="roll-call-course" required style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:5px;">
+                <option value="" disabled selected>Choisir un cours...</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="roll-call-date">Date</label>
+            <input type="date" id="roll-call-date" required style="width:100%; padding:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:white; border-radius:5px;">
+        </div>
+
+        <div class="form-group">
+            <label>Liste des étudiants</label>
+            <div id="roll-call-list" style="max-height:300px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:10px; border-radius:5px;">
+                <!-- Filled by JS -->
+                <div style="text-align:center; opacity:0.6;">Veuillez sélectionner un cours.</div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-neon modal-submit" style="width:100%;">Enregistrer l'appel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chart.js pour les graphiques SmartClass -->
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <!-- Socket.io: Load from local backend first, then CDN as fallback -->
+      <script src="http://localhost:4000/socket.io/socket.io.js"></script>
+  <script>
+    if (typeof io === "undefined") {
+      document.write('<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"><\/script>');
+    }
+  </script>
+  <script src="utils.js?v=2"></script>
+  <script src="student-tracking.js?v=2"></script>
+  <script src="teacher-dashboard.js?v=2"></script>
+</body>
+</html>

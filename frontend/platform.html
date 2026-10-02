@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wes'sup Business City - Campus Virtuel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh; /* Fallback */
+      height: 100dvh;
+      overflow: hidden;
+      background: #000;
+    }
+    
+    iframe {
+      width: 100vw;
+      height: 100vh; /* Fallback */
+      height: 100dvh;
+      border: none;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Bouton plein écran - Persistent */
+    .fullscreen-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: rgba(3, 7, 18, 0.85);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #e5e7eb;
+      cursor: pointer;
+      z-index: 9999; /* Always on top of iframe */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(30, 41, 59, 0.95);
+      border-color: #00ffff;
+      color: #00ffff;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    }
+
+    .fullscreen-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Student Profile Overlay -->
+  <div id="student-profile-overlay" style="display: none; position: fixed; top: 24px; left: 24px; padding: 8px 16px; border-radius: 50px; align-items: center; gap: 12px; z-index: 9999; backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.3s ease; cursor: pointer;">
+    <div id="student-avatar-container"></div>
+    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+      <span id="student-name" style="color: white; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;">Étudiant</span>
+      <span id="student-role" style="color: #00ff88; font-size: 11px; text-transform: uppercase;">Student</span>
+    </div>
+    <div style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 8px #00ff88;"></div>
+  </div>
+
+  <!-- Iframe hosting the application content -->
+  <!-- allow="fullscreen" is crucial for the iframe content to request fullscreen if needed, 
+       but here the parent controls the fullscreen -->
+  <iframe src="" id="app-frame" allow="fullscreen; autoplay; camera; microphone; clipboard-write"></iframe>
+
+  <button class="fullscreen-btn" id="fullscreen-toggle" title="Mode Plein Écran">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+    </svg>
+  </button>
+
+  <script src="http://localhost:4000/socket.io/socket.io.js"></script>
+  <script src="utils.js"></script>
+  <script>
+    (function setupPlatformAvatarSync() {
+      function getCurrentUserSafe() {
+        try { return JSON.parse(localStorage.getItem("wbc_user") || "{}"); }
+        catch { return {}; }
+      }
+      function safeUserId(u) {
+        return String(u?.id || u?._id || u?.userId || u?.matricule || u?.email || "").trim();
+      }
+      function refreshAvatarIfNeeded(force = false) {
+        const container = document.getElementById("student-avatar-container");
+        const user = getCurrentUserSafe();
+        if (!container || typeof window.createAvatarHtml !== "function" || !user) return;
+        if (force || !container.dataset.rendered || safeUserId(JSON.parse(container.dataset.renderedUser || "{}")) !== safeUserId(user)) {
+          container.innerHTML = window.createAvatarHtml(user, "36px");
+          container.dataset.rendered = "1";
+          try { container.dataset.renderedUser = JSON.stringify(user); } catch {}
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = getCurrentUserSafe();
+        if (user && user.username) {
+          const nameEl = document.getElementById("student-name");
+          const roleEl = document.getElementById("student-role");
+          if (nameEl) nameEl.textContent = user.username;
+          if (roleEl) roleEl.textContent = user.role || "Étudiant";
+          refreshAvatarIfNeeded(true);
+        }
+
+        let lastThumbSuffix = "";
+        try {
+          window.addEventListener("storage", (e) => {
+            const uid = safeUserId(getCurrentUserSafe());
+            if (!uid) return;
+            if (e.key === "wbc_avatar_thumb:" + uid || e.key === "wbc_user") {
+              refreshAvatarIfNeeded(true);
+            }
+          });
+        } catch {}
+
+        setInterval(() => {
+          try {
+            const uid = safeUserId(getCurrentUserSafe());
+            if (!uid) return;
+            const raw = localStorage.getItem("wbc_avatar_thumb:" + uid) || "";
+            const suffix = raw.slice(-20);
+            if (suffix && suffix !== lastThumbSuffix) {
+              lastThumbSuffix = suffix;
+              refreshAvatarIfNeeded(true);
+            }
+            refreshAvatarIfNeeded(false);
+          } catch {}
+        }, 2000);
+      });
+    })();
+
+    (function loadOptionalChatWidget() {
+      const user = JSON.parse(localStorage.getItem("wbc_user") || "{}");
+      const role = String(user?.role || "").toUpperCase();
+      if (role === "ADMIN") return;
+
+      // Empêcher l'auto-init : le widget sera instancié par la page cible (hall/class-a/class-b) avec socket partagée
+      window.WBC_DISABLE_AUTO_CHAT_INIT = true;
+      // Exposer la classe WBCChatWidget globalement pour utilisation par l'iframe si besoin
+      const script = document.createElement("script");
+      script.src = "chat-widget.js";
+      document.body.appendChild(script);
+    })();
+
+    // Handle Dynamic Routing
+    const params = new URLSearchParams(window.location.search);
+    const userForRouting = JSON.parse(localStorage.getItem("wbc_user") || "{}");
+    const roleForRouting = String(userForRouting?.role || "").toUpperCase();
+    const defaultTarget =
+      roleForRouting === "ADMIN"
+        ? "admin-dashboard.html"
+        : "hall.html";
+    const target = params.get('target') || defaultTarget;
+    const iframe = document.getElementById('app-frame');
+
+    function setPlatformTarget(nextTarget) {
+      let safeTarget = String(nextTarget || '').trim() || defaultTarget;
+      if (roleForRouting === "ADMIN") {
+        const allowlist = new Set(["admin-dashboard.html", "feed.html"]);
+        if (!allowlist.has(safeTarget)) {
+          safeTarget = "admin-dashboard.html";
+        }
+      }
+      iframe.src = safeTarget;
+      const url = new URL(window.location.href);
+      url.searchParams.set('target', safeTarget);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    setPlatformTarget(target);
+
+    const profileOverlay = document.getElementById("student-profile-overlay");
+    if (profileOverlay && roleForRouting !== "ADMIN") {
+      profileOverlay.addEventListener("click", () => {
+        setPlatformTarget("avatar-setup.html");
+      });
+    }
+
+    // Fullscreen Toggle Logic
+    const fullscreenBtn = document.getElementById('fullscreen-toggle');
+    
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch((e) => {
+          console.error(`Error attempting to enable fullscreen: ${e.message} (${e.name})`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Update Icon based on state
+    document.addEventListener('fullscreenchange', () => {
+      const svg = fullscreenBtn.querySelector('svg');
+      if (document.fullscreenElement) {
+        // Change to "Exit Fullscreen" icon
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+        fullscreenBtn.title = "Quitter le plein écran";
+      } else {
+        // Back to "Enter Fullscreen" icon
+        svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />';
+        fullscreenBtn.title = "Mode Plein Écran";
+      }
+    });
+
+    // Handle initial auth check or redirects if needed
+    // The iframe will handle its own logic.
+  </script>
+</body>
+</html>

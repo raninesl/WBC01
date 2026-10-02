@@ -1,0 +1,98 @@
+/* Cube Transition Styles */
+:root {
+  --cube-duration: 0.8s;
+  --cube-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+html {
+  background-color: #020617;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  perspective: 1500px;
+  transform-style: preserve-3d;
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* 
+   Key trick for Cube Rotation:
+   Set transform-origin to be "behind" the screen by half the viewport width.
+   This makes the rotation axis the center of a virtual cube.
+*/
+.cube-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50% -50vw;
+}
+
+/* Initial state for page load */
+.page-enter {
+  animation: rotateCubeIn var(--cube-duration) var(--cube-ease) forwards;
+}
+
+/* State for navigating away */
+.page-exit {
+  animation: rotateCubeOut var(--cube-duration) var(--cube-ease) forwards;
+  pointer-events: none; /* Prevent clicks during exit */
+}
+
+@keyframes rotateCubeIn {
+  from {
+    opacity: 0;
+    transform: rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes rotateCubeOut {
+  from {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: rotateY(-90deg);
+  }
+}
+
+/* Reverse animations for "Back" navigation if needed */
+.page-enter-back {
+  animation: rotateCubeInBack var(--cube-duration) var(--cube-ease) forwards;
+}
+
+.page-exit-back {
+  animation: rotateCubeOutBack var(--cube-duration) var(--cube-ease) forwards;
+}
+
+@keyframes rotateCubeInBack {
+  from {
+    opacity: 0;
+    transform: rotateY(-90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes rotateCubeOutBack {
+  from {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: rotateY(90deg);
+  }
+}

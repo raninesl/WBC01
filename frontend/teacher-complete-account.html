@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Activation compte professeur – Wes'sup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="logo wess.png" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-left">
+      <header class="auth-header">
+        <img
+          src="Logo wessup st genis.png"
+          alt="Logo Wes'sup"
+          class="auth-logo"
+        />
+        <span class="auth-brand">Wes'sup</span>
+      </header>
+
+      <div class="auth-left-content">
+        <div class="auth-tag">Activation professeur</div>
+        <h1>
+          Bienvenue sur<br />
+          <span>Wes'sup Business City</span>
+        </h1>
+        <p>
+          Active ton compte pour accéder à ton espace professeur sur le campus 3D.
+        </p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Finaliser ton compte professeur</h2>
+        <p class="auth-subtitle" id="invite-subtitle"></p>
+
+        <form id="teacher-complete-form" class="auth-form">
+          <div class="form-group">
+            <label for="teacher-email">Email</label>
+            <input id="teacher-email" type="email" disabled />
+          </div>
+
+          <div class="form-group">
+            <label for="teacher-fullname">Nom complet</label>
+            <input id="teacher-fullname" type="text" />
+          </div>
+
+          <div class="form-group">
+            <label for="teacher-password">Mot de passe</label>
+            <input id="teacher-password" type="password" placeholder="Au moins 8 caractères" />
+          </div>
+
+          <div class="form-group">
+            <label for="teacher-password-confirm">Confirmation du mot de passe</label>
+            <input id="teacher-password-confirm" type="password" />
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Valider mon compte
+          </button>
+
+          <div id="teacher-complete-error" class="auth-error"></div>
+          <div id="teacher-complete-success" class="auth-success"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="utils.js?v=2"></script>
+  <script src="teacher-complete-account.js?v=2"></script>
+</body>
+</html>
